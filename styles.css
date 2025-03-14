@@ -10,15 +10,15 @@ body {
   background-color: #ffffff;
   color: #000000;
   line-height: 1.6;
-  width: 100vw;
+  max-width: 100%;
   overflow-x: hidden;
 }
 
-/* Ajuste do layout para ocupar toda a largura */
+/* Ajuste do layout para ocupar uma largura adequada */
 .container, .main-content {
-  width: 100vw;
-  max-width: 100%;
-  margin: 0;
+  max-width: 1200px; /* Ajuste para um tamanho padrão */
+  width: 90%; /* Mantém responsivo */
+  margin: 0 auto; /* Centraliza o conteúdo */
   padding: 20px;
 }
 
@@ -36,12 +36,12 @@ body {
 
 /* Ajustando a tabela para ocupar o espaço corretamente */
 .table-responsive {
-  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
 }
 
 table {
-  width: 100%;
+  max-width: 100%;
   border-collapse: collapse;
   display: block;
   overflow-x: auto;
@@ -78,13 +78,16 @@ a:hover {
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Sidebar removendo margem desnecessária */
+/* Sidebar corrigido para se ajustar ao layout */
 .sidebar {
+  max-width: 300px; /* Define um tamanho adequado */
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
   background: white;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  width: 100%;
 }
 
 /* Rodapé ocupando toda a largura */

@@ -24,7 +24,7 @@ format:
     css: styles.css
     toc: true
     toc-location: left  
-    page-layout: full  
+    page-layout: article  
 
 
 
