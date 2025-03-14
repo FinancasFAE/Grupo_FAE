@@ -1,8 +1,8 @@
 ---
 title: "Projeto Finanças"
 ---
-Daniel K Junior (https://danielkuiavski.github.io/Daniel-s-Portfolio/)
 
+Daniel K Junior (https://danielkuiavski.github.io/Daniel-s-Portfolio/)
 
 Arthur Lauffer (https://arthurlauffer7.github.io/Lauffer-s-Portfolio/)
 
@@ -10,13 +10,7 @@ João Niquele (https://joaoniquele.github.io/Portfolio/)
 
 Davi Kemper (https://github.com/DaviKemper/portfolio.git)
 
-```{r}
-## Usaremos as seguintes ações da bolsa: 
-#BRFS3,
-#JBSS3,
-#BEEF3,
-#MRFG3,
-#TSN,
-#HRL,
-#GIS
+
+```
+Usaremos seguintes ações da bolsa -> BRFS3, JBSS3,BEEF3,MRFG3,TSN,HRL,GIS
 ```
