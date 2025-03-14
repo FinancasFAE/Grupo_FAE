@@ -2,6 +2,8 @@
 title: "Projeto Finanças"
 ---
 Daniel K Junior (https://danielkuiavski.github.io/Daniel-s-Portfolio/)
+
+
 Arthur Lauffer (https://arthurlauffer7.github.io/Lauffer-s-Portfolio/)
 
 ```{r}
