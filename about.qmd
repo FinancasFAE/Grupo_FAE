@@ -1,10 +1,8 @@
 ---
-title: "Sobre"
+title: "Sobre Nós"
 format: html
 toc: true
 ---
-
-# Sobre Nós
 
 ## Sumário
 
@@ -15,7 +13,7 @@ toc: true
 
 ## Daniel K Junior {#daniel-k-junior}
 
-![](imagens/DanielKuiavski.jpg){style="border-radius: 50%;" width="150"}
+![](imagens/DanielKuiavski.jpg){style="border-radius: 50%;" width="100"}
 
 **Cargo:** Formado na Escola de Sargento das Armas no ano de 2021, decidiu fazer a transição de carreira para a área de Dados já no ínicio da faculdade, concluindo a transiçaõ no final do ano de 2024, hoje atua como Analista de BI na EZ Chart\
 🔗 [Portfolio](https://danielkuiavski.github.io/Daniel-s-Portfolio/)
