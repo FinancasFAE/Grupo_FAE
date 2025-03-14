@@ -30,7 +30,7 @@ toc: true
 
 ## Davi Kemper
 
-![](imagens/DaviKemper.jpg){width="150px" style="border-radius: 50%;"}
+![](imagens/DaviKemper.jpg){style="border-radius: 50%;" width="119"}
 
 **Cargo:** Estudante de Ciência de Dados na FAE, atuou como Analista de BI do grupo Metronorte. 🔗 [Portfolio](https://davikemper.github.io/portfolioDaviKemper/)
 
@@ -38,7 +38,7 @@ toc: true
 
 ## João Niquele {#joão-niquele}
 
-![](imagens/JoaoNiquele.jpg){width="150px" style="border-radius: 50%;"}
+![](imagens/JoaoNiquele.jpg){style="border-radius: 50%;" width="84"}
 
 **Cargo:** Estudante de Ciência de Dados na FAE 🔗 [Portfolio](https://joaoniquele.github.io/Portfolio/)
 
