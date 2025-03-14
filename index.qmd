@@ -8,6 +8,7 @@ format:
     df-print: paged
 editor: visual
 ---
+
 ```{r setup, include=FALSE}
 
 knitr::opts_chunk$set(
@@ -19,13 +20,14 @@ knitr::opts_chunk$set(
 knitr::opts_chunk$set(comment = NA)    # Remove all coments # of R outputs
 knitr::opts_chunk$set(warning = FALSE) # Remove all warnings # of R outputs
 knitr::opts_chunk$set(message = FALSE) # Remove all messages # of R outputs
+
 ```
 
 Usaremos seguintes ações da bolsa -\> BRFS3, JBSS3, BEEF3, MRFG3, TSN, HRL, GIS
 
 Analisando os dados em uma tabela:
 
-```{r, echo=FALSE}
+```{r}
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
@@ -78,14 +80,14 @@ colnames(portfolioPrices) <- c(
 )
 ```
 
-```{r, echo=FALSE}
+```{r fig.width=9, fig.height=9}
 # Visualizar com DT
 datatable(tail(portfolioPrices), options = list(pageLength = 10, scrollX = TRUE)) 
 ```
 
 E então a gente faz uma analise temporal dos dados, tendo o eixo X sendo a variável tempo, e o eixo Y sendo o preço:
 
-```{r, echo=FALSE}
+```{r}
 portfolioPrices |> as.data.frame() |>
   mutate(
     time = seq_along(GIS)

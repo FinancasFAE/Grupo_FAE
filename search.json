@@ -4,13 +4,13 @@
     "href": "index.html",
     "title": "Projeto Finanças",
     "section": "",
-    "text": "Usaremos seguintes ações da bolsa -&gt; BRFS3, JBSS3, BEEF3, MRFG3, TSN, HRL, GIS\nAnalisando os dados em uma tabela:\n\n\n\n\n\n\nE então a gente faz uma analise temporal dos dados, tendo o eixo X sendo a variável tempo, e o eixo Y sendo o preço:"
+    "text": "Usaremos seguintes ações da bolsa -&gt; BRFS3, JBSS3, BEEF3, MRFG3, TSN, HRL, GIS\nAnalisando os dados em uma tabela:\n\n\nCode\nlibrary(tidyverse)\nlibrary(dplyr)\nlibrary(ggplot2)\nlibrary(timeSeries)\nlibrary(fPortfolio)\nlibrary(quantmod)\nlibrary(cowplot) \nlibrary(lattice)\nlibrary(timetk)\nlibrary(quantmod)\nlibrary(DT) \n\n\nTICKERS &lt;- c(\n  \"BRFS3.SA\",\n  \"JBSS3.SA\",\n  \"BEEF3.SA\",\n  \"MRFG3.SA\",\n  \"TSN\",\n  \"HRL\",\n  \"GIS\"\n)\n\n\n\n\n\nportfolioPrices &lt;- NULL\nfor ( Ticker in TICKERS )\n  portfolioPrices &lt;- cbind(\n    portfolioPrices, \n    getSymbols(\n      Ticker,\n      src = \"yahoo\",\n      from = \"2019-01-01\",\n      auto.assign = FALSE\n    )[,4]\n  )\n\nportfolioPrices &lt;- portfolioPrices[apply(portfolioPrices, 1, function(x) all(!is.na(x))),]\n\ncolnames(portfolioPrices) &lt;- c(\n  \"BRFS3\",\n  \"JBSS3\",\n  \"BEEF3\",\n  \"MRFG3\",\n  \"TSN\",\n  \"HRL\",\n  \"GIS\"\n)\n\n\n\n\nCode\n# Visualizar com DT\ndatatable(tail(portfolioPrices), options = list(pageLength = 10, scrollX = TRUE)) \n\n\n\n\n\n\nE então a gente faz uma analise temporal dos dados, tendo o eixo X sendo a variável tempo, e o eixo Y sendo o preço:\n\n\nCode\nportfolioPrices |&gt; as.data.frame() |&gt;\n  mutate(\n    time = seq_along(GIS)\n  ) |&gt;\n  pivot_longer(\n    !time,\n    names_to = \"Variables\",\n    values_to = \"Value\"  \n  ) |&gt;\n  group_by(Variables) |&gt;\n  plot_time_series(\n    time,\n    Value,\n    .interactive = F, # Change for TRUE for better visualization\n    .facet_ncol = 2,\n    .smooth = FALSE\n  ) +\n  theme(\n    strip.background = element_rect(fill = \"white\", colour = \"white\")\n  )"
   },
   {
     "objectID": "about.html",
     "href": "about.html",
     "title": "Sobre",
     "section": "",
-    "text": "Um pouco de nós:\nDaniel K Junior - Analista de BI na EZ Chart (https://danielkuiavski.github.io/Daniel-s-Portfolio/)\nArthur Lauffer - Analista de BI na Enlite (https://arthurlauffer7.github.io/Lauffer-s-Portfolio/)\nDavi Kemper - Estudante de Ciência de Dados (https://github.com/DaviKemper/portfolio.git)\nJoão Niquele - Estudante de Ciência de Dados (https://joaoniquele.github.io/Portfolio/)"
+    "text": "Um pouco de nós:\nDaniel K Junior - Analista de BI na EZ Chart (https://danielkuiavski.github.io/Daniel-s-Portfolio/)\nArthur Lauffer - Analista de BI na Enline (https://arthurlauffer7.github.io/Lauffer-s-Portfolio/)\nDavi Kemper - Estudante de Ciência de Dados (https://davikemper.github.io/portfolioDaviKemper/)\nJoão Niquele - Estudante de Ciência de Dados (https://joaoniquele.github.io/Portfolio/)"
   }
 ]
