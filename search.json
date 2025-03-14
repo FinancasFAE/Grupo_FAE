@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "Projeto Finanças",
     "section": "",
-    "text": "Usaremos seguintes ações da bolsa -&gt; BRFS3, JBSS3, BEEF3, MRFG3, TSN, HRL, GIS\nAnalisando os dados em uma tabela:\n\n\nCode\n# Visualizar com DT\ndatatable(tail(portfolioPrices), options = list(pageLength = 10, scrollX = TRUE)) \n\n\n\n\n\n\nE então a gente faz uma analise temporal dos dados, tendo o eixo X sendo a variável tempo, e o eixo Y sendo o preço:"
+    "text": "Usaremos seguintes ações da bolsa -&gt; BRFS3, JBSS3, BEEF3, MRFG3, TSN, HRL, GIS\nAnalisando os dados em uma tabela:\n\n\n\n\n\n\nE então a gente faz uma analise temporal dos dados, tendo o eixo X sendo a variável tempo, e o eixo Y sendo o preço:"
   },
   {
     "objectID": "about.html",

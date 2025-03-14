@@ -78,7 +78,7 @@ colnames(portfolioPrices) <- c(
 )
 ```
 
-```{r fig.width=9, fig.height=9}
+```{r, echo=FALSE}
 # Visualizar com DT
 datatable(tail(portfolioPrices), options = list(pageLength = 10, scrollX = TRUE)) 
 ```
