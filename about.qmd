@@ -1,9 +1,18 @@
 ---
-title: "About"
+title: "Sobre"
 ---
 
-About this site
+Um pouco de nós:
 
-```{r}
-1 + 1
-```
+Daniel K Junior - Analista de BI na EZ Chart (https://danielkuiavski.github.io/Daniel-s-Portfolio/)
+
+
+Arthur Lauffer - Analista de BI na Enlite (https://arthurlauffer7.github.io/Lauffer-s-Portfolio/)
+
+
+Davi Kemper - Estudante de Ciência de Dados (https://github.com/DaviKemper/portfolio.git)
+
+
+João Niquele - Estudante de Ciência de Dados (https://joaoniquele.github.io/Portfolio/)
+
+

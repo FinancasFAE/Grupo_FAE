@@ -4,13 +4,13 @@
     "href": "index.html",
     "title": "Projeto Finanças",
     "section": "",
-    "text": "Daniel K Junior (https://danielkuiavski.github.io/Daniel-s-Portfolio/)\nArthur Lauffer (https://arthurlauffer7.github.io/Lauffer-s-Portfolio/)\nJoão Niquele (https://joaoniquele.github.io/Portfolio/)\nDavi Kemper (https://github.com/DaviKemper/portfolio.git)\nUsaremos seguintes ações da bolsa -&gt; BRFS3, JBSS3,BEEF3,MRFG3,TSN,HRL,GIS"
+    "text": "Usaremos seguintes ações da bolsa -&gt; BRFS3, JBSS3, BEEF3, MRFG3, TSN, HRL, GIS\nAnalisando os dados em uma tabela:\n\n\nCode\n# Visualizar com DT\ndatatable(tail(portfolioPrices), options = list(pageLength = 10, scrollX = TRUE)) \n\n\n\n\n\n\nE então a gente faz uma analise temporal dos dados, tendo o eixo X sendo a variável tempo, e o eixo Y sendo o preço:"
   },
   {
     "objectID": "about.html",
     "href": "about.html",
-    "title": "About",
+    "title": "Sobre",
     "section": "",
-    "text": "About this site\n\n1 + 1\n\n[1] 2"
+    "text": "Um pouco de nós:\nDaniel K Junior - Analista de BI na EZ Chart (https://danielkuiavski.github.io/Daniel-s-Portfolio/)\nArthur Lauffer - Analista de BI na Enlite (https://arthurlauffer7.github.io/Lauffer-s-Portfolio/)\nDavi Kemper - Estudante de Ciência de Dados (https://github.com/DaviKemper/portfolio.git)\nJoão Niquele - Estudante de Ciência de Dados (https://joaoniquele.github.io/Portfolio/)"
   }
 ]

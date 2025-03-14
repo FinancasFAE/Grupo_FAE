@@ -1,16 +1,109 @@
 ---
 title: "Projeto Finanças"
+format:
+  html:
+    self-contained: true
+    toc: true
+    code-fold: true
+    df-print: paged
+editor: visual
 ---
+```{r setup, include=FALSE}
 
-Daniel K Junior (https://danielkuiavski.github.io/Daniel-s-Portfolio/)
-
-Arthur Lauffer (https://arthurlauffer7.github.io/Lauffer-s-Portfolio/)
-
-João Niquele (https://joaoniquele.github.io/Portfolio/)
-
-Davi Kemper (https://github.com/DaviKemper/portfolio.git)
-
-
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE,
+	comment = NA
+)
+knitr::opts_chunk$set(comment = NA)    # Remove all coments # of R outputs
+knitr::opts_chunk$set(warning = FALSE) # Remove all warnings # of R outputs
+knitr::opts_chunk$set(message = FALSE) # Remove all messages # of R outputs
 ```
-Usaremos seguintes ações da bolsa -> BRFS3, JBSS3,BEEF3,MRFG3,TSN,HRL,GIS
+
+Usaremos seguintes ações da bolsa -\> BRFS3, JBSS3, BEEF3, MRFG3, TSN, HRL, GIS
+
+Analisando os dados em uma tabela:
+
+```{r, echo=FALSE}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(timeSeries)
+library(fPortfolio)
+library(quantmod)
+library(cowplot) 
+library(lattice)
+library(timetk)
+library(quantmod)
+library(DT) 
+
+
+TICKERS <- c(
+  "BRFS3.SA",
+  "JBSS3.SA",
+  "BEEF3.SA",
+  "MRFG3.SA",
+  "TSN",
+  "HRL",
+  "GIS"
+)
+
+
+
+
+
+portfolioPrices <- NULL
+for ( Ticker in TICKERS )
+  portfolioPrices <- cbind(
+    portfolioPrices, 
+    getSymbols(
+      Ticker,
+      src = "yahoo",
+      from = "2019-01-01",
+      auto.assign = FALSE
+    )[,4]
+  )
+
+portfolioPrices <- portfolioPrices[apply(portfolioPrices, 1, function(x) all(!is.na(x))),]
+
+colnames(portfolioPrices) <- c(
+  "BRFS3",
+  "JBSS3",
+  "BEEF3",
+  "MRFG3",
+  "TSN",
+  "HRL",
+  "GIS"
+)
+```
+
+```{r fig.width=9, fig.height=9}
+# Visualizar com DT
+datatable(tail(portfolioPrices), options = list(pageLength = 10, scrollX = TRUE)) 
+```
+
+E então a gente faz uma analise temporal dos dados, tendo o eixo X sendo a variável tempo, e o eixo Y sendo o preço:
+
+```{r, echo=FALSE}
+portfolioPrices |> as.data.frame() |>
+  mutate(
+    time = seq_along(GIS)
+  ) |>
+  pivot_longer(
+    !time,
+    names_to = "Variables",
+    values_to = "Value"  
+  ) |>
+  group_by(Variables) |>
+  plot_time_series(
+    time,
+    Value,
+    .interactive = F, # Change for TRUE for better visualization
+    .facet_ncol = 2,
+    .smooth = FALSE
+  ) +
+  theme(
+    strip.background = element_rect(fill = "white", colour = "white")
+  )
 ```

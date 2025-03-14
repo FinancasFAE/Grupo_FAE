@@ -1,1 +1,83 @@
-/* css styles */
+/* Estilos gerais */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
+  line-height: 1.6;
+  width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Ajuste do layout para ocupar toda a largura */
+.container, .main-content {
+  width: 100vw;
+  max-width: 100%;
+  margin: 0;
+  padding: 20px;
+}
+
+/* Cabeçalho ocupando toda a largura */
+.navbar {
+  background: linear-gradient(135deg, #007bff, #6610f2);
+  padding: 10px 20px;
+  border-radius: 0;
+  width: 100%;
+}
+
+/* Ajustando a tabela para ocupar o espaço corretamente */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+/* Links */
+a {
+  color: #000;
+  text-decoration: none;
+  transition: 0.3s;
+}
+a:hover {
+  color: #005665;
+}
+
+/* Sumário (TOC) */
+#toc {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Sidebar removendo margem desnecessária */
+.sidebar {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+/* Rodapé ocupando toda a largura */
+footer {
+  text-align: center;
+  padding: 20px;
+  margin-top: 20px;
+  background: linear-gradient(135deg, #667841, #007841);
+  color: white;
+  width: 100%;
+  border-radius: 0;
+}

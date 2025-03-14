@@ -6,16 +6,25 @@ website:
   navbar:
     left:
       - href: index.qmd
-        text: Home
-      - about.qmd
+        text: 🏠 Home
+      - href: about.qmd
+        text: ℹ️ Sobre
+    right:
+      - icon: github
+        href: "https://github.com/FinancasFae"
+        aria-label: "GitHub"
+  sidebar:
+    style: "floating" 
+    search: true  
 
 format:
   html:
     theme:
       - cosmo
-      - brand
     css: styles.css
     toc: true
+    toc-location: left  
+    page-layout: full  
 
 
 
