@@ -7,6 +7,8 @@ website:
     left:
       - href: index.qmd
         text: 🏠 Home
+      - href: Terceiro_Encontro.qmd
+        text: Feature Engineering
       - href: about.qmd
         text: ℹ️ Sobre
     right:
