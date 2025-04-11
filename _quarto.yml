@@ -8,7 +8,9 @@ website:
       - href: index.qmd
         text: Home
       - href: page2.qmd
-        text: Análise futura
+        text: Análise de futuro
+      - href: about.qmd
+        text: outra página
       - href: about.qmd
         text: Sobre
     right:
