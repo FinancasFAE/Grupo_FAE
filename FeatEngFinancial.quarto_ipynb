@@ -8,7 +8,6 @@
         "title: \"Feature Engineering com séries de preços de ativos financeiros\"\n",
         "format:\n",
         "  html:\n",
-        "    css: styles.css\n",
         "    self-contained: true\n",
         "    toc: true\n",
         "    code-fold: true\n",
@@ -17,16 +16,11 @@
         "---\n",
         "\n",
         "\n",
-        "\n",
-        "\n",
         "------------------------------------------------------------------------\n",
         "\n",
         "<left> ![](https://raw.githubusercontent.com/profrhozon/site/main/logo_FAE.png){width=\"15%\"} </left>\n",
         "\n",
         "------------------------------------------------------------------------\n",
-        "\n",
-        "```         \n",
-        "```\n",
         "\n",
         "::: callout-note\n",
         "## Resumo\n",
@@ -42,15 +36,11 @@
         "## 📌 Introdução: Feature Engineering em dados de séries financeiras\n",
         "\n",
         "\n",
-        "\n",
-        "\n",
         "```{=html}\n",
         "<!-- \n",
         "Escrever a intro do documento aqui ....\n",
         "-->\n",
         "```\n",
-        "\n",
-        "\n",
         "\n",
         "\n",
         "### Medindo a Volatilidade: Com e Sem GARCH\n",
@@ -103,14 +93,15 @@
         "\n",
         "-   Pode ser sensível à escolha da distribuição dos resíduos (por exemplo, normal vs. $t$ de Student).\n",
         "\n",
-        "::: panel-tabset\n",
-        "## Python\n"
+        "    ::: {#Python .panel-tabset}"
       ],
-      "id": "06188540"
+      "id": "fa1022ab"
     },
     {
       "cell_type": "code",
-      "metadata": {},
+      "metadata": {
+        "md-indent": "    "
+      },
       "source": [
         "#import yfinance as yf\n",
         "from yahooquery import Ticker\n",
@@ -124,13 +115,15 @@
         "from plotly.subplots import make_subplots\n",
         "from plotnine import ggplot, aes, geom_line, facet_wrap, labs, theme, element_text, theme_minimal"
       ],
-      "id": "f95acf30",
+      "id": "5777eb01",
       "execution_count": null,
       "outputs": []
     },
     {
       "cell_type": "code",
-      "metadata": {},
+      "metadata": {
+        "md-indent": "    "
+      },
       "source": [
         "# Tickers for portfolio\n",
         "TICKERS = [\n",
@@ -162,7 +155,7 @@
         "\n",
         "portfolio_prices.head()"
       ],
-      "id": "d33efdad",
+      "id": "a2825fee",
       "execution_count": null,
       "outputs": []
     },
@@ -170,16 +163,15 @@
       "cell_type": "markdown",
       "metadata": {},
       "source": [
-        "Plotamos os gráficos das séries temporais de preços\n",
-        "\n",
-        "```         \n",
-        "```\n"
+        "    Plotamos os gráficos das séries temporais de preços\n"
       ],
-      "id": "904e66de"
+      "id": "69b83388"
     },
     {
       "cell_type": "code",
-      "metadata": {},
+      "metadata": {
+        "md-indent": "    "
+      },
       "source": [
         "#| eval: false\n",
         "\n",
@@ -196,7 +188,7 @@
         "              title='Séries Temporais de Preços')\n",
         "fig.show()\n"
       ],
-      "id": "5baaf2a5",
+      "id": "b1532adf",
       "execution_count": null,
       "outputs": []
     },
@@ -204,25 +196,27 @@
       "cell_type": "markdown",
       "metadata": {},
       "source": [
-        "mas essas séries temporais tem um problema....os preços estão em seus \"níveis\", e isso em análise de séries temporais não é o ideal. Precisamos trabalhar com as séries estacionárias e analisar os retornos dos preços.\n",
+        "    mas essas séries temporais tem um problema....os preços estão em seus \"níveis\", e isso em análise de séries temporais não é o ideal. Precisamos trabalhar com as séries estacionárias e analisar os retornos dos preços.\n",
         "\n",
-        "*A stationary time series is one whose statistical properties do not depend on the time at which the series is observed.18 Thus, time series with trends, or with seasonality, are not stationary — the trend and seasonality will affect the value of the time series at different times. On the other hand, a white noise series is stationary — it does not matter when you observe it, it should look much the same at any point in time.*\n",
+        "    *A stationary time series is one whose statistical properties do not depend on the time at which the series is observed.18 Thus, time series with trends, or with seasonality, are not stationary — the trend and seasonality will affect the value of the time series at different times. On the other hand, a white noise series is stationary — it does not matter when you observe it, it should look much the same at any point in time.*\n",
         "\n",
-        "*Some cases can be confusing — a time series with cyclic behaviour (but with no trend or seasonality) is stationary. This is because the cycles are not of a fixed length, so before we observe the series we cannot be sure where the peaks and troughs of the cycles will be.*\n",
+        "    *Some cases can be confusing — a time series with cyclic behaviour (but with no trend or seasonality) is stationary. This is because the cycles are not of a fixed length, so before we observe the series we cannot be sure where the peaks and troughs of the cycles will be.*\n",
         "\n",
-        "*In general, a stationary time series will have no predictable patterns in the long-term. Time plots will show the series to be roughly horizontal (although some cyclic behaviour is possible), with constant variance.*\n",
+        "    *In general, a stationary time series will have no predictable patterns in the long-term. Time plots will show the series to be roughly horizontal (although some cyclic behaviour is possible), with constant variance.*\n",
         "\n",
-        "(Hyndman, R.J., & Athanasopoulos, G. (2021) **Forecasting: principles and practice**, 3rd edition, OTexts: Melbourne, Australia. <https://otexts.com/fpp3/stationarity.html>. Accessed on 2025/march.)\n",
+        "    (Hyndman, R.J., & Athanasopoulos, G. (2021) **Forecasting: principles and practice**, 3rd edition, OTexts: Melbourne, Australia. <https://otexts.com/fpp3/stationarity.html>. Accessed on 2025/march.)\n",
         "\n",
-        "Estacionar uma série temporal econômica é importante pois:\n",
+        "    Estacionar uma série temporal econômica é importante pois:\n",
         "\n",
-        "*\"Uma série temporal é dita estacionária se suas propriedades estatísticas, como a média e a variância, permanecem constantes ao longo do tempo. Em outras palavras, não há uma tendência determinística na série, e as flutuações ao redor da média são estáveis. Se a série não for estacionária, suas previsões podem ser pouco confiáveis, pois os padrões passados podem não ser representativos do futuro.\"* (Gujarati & Porter, 2009, p. 753).\n"
+        "    *\"Uma série temporal é dita estacionária se suas propriedades estatísticas, como a média e a variância, permanecem constantes ao longo do tempo. Em outras palavras, não há uma tendência determinística na série, e as flutuações ao redor da média são estáveis. Se a série não for estacionária, suas previsões podem ser pouco confiáveis, pois os padrões passados podem não ser representativos do futuro.\"* (Gujarati & Porter, 2009, p. 753).\n"
       ],
-      "id": "e052f559"
+      "id": "03a2e9b1"
     },
     {
       "cell_type": "code",
-      "metadata": {},
+      "metadata": {
+        "md-indent": "    "
+      },
       "source": [
         "# Calcular os log-retornos\n",
         "log_returns = portfolio_prices.copy()\n",
@@ -231,7 +225,7 @@
         "# Remover a primeira linha que contém NaN após a diferenciação\n",
         "log_returns = log_returns.dropna()"
       ],
-      "id": "5844c352",
+      "id": "d9e8313f",
       "execution_count": null,
       "outputs": []
     },
@@ -239,14 +233,16 @@
       "cell_type": "markdown",
       "metadata": {},
       "source": [
-        "```         \n",
-        "```\n"
+        "    ```         \n",
+        "    ```\n"
       ],
-      "id": "999f3cfd"
+      "id": "b85abb96"
     },
     {
       "cell_type": "code",
-      "metadata": {},
+      "metadata": {
+        "md-indent": "    "
+      },
       "source": [
         "#| eval: false\n",
         "\n",
@@ -261,7 +257,7 @@
         "              title='Séries Temporais de Log-Retornos')\n",
         "fig.show()\n"
       ],
-      "id": "fa04cb25",
+      "id": "4bdd85f2",
       "execution_count": null,
       "outputs": []
     },
@@ -269,13 +265,15 @@
       "cell_type": "markdown",
       "metadata": {},
       "source": [
-        "Analisar as distribuições dos retornos é fundamental para entender o comportamento estatístico dos ativos financeiros. Essa análise nos permite identificar características importantes, como a presença de assimetria e caudas pesadas. <mark>Por exemplo, uma assimetria negativa indica que os retornos tendem a oscilar mais para valores baixos, sugerindo um risco maior de perdas acentuadas, enquanto uma assimetria positiva indica uma tendência para oscilações para valores mais altos</mark>. Além disso, observar a forma da distribuição ajuda a avaliar se a hipótese de normalidade é válida ou se é necessário adotar distribuições alternativas, como a distribuição $t$ de Student, que captura melhor a ocorrência de eventos extremos. Essa compreensão é crucial para a modelagem de riscos, desenvolvimento de estratégias de investimento e aprimoramento dos modelos econométricos utilizados na previsão dos preços.\n"
+        "    Analisar as distribuições dos retornos é fundamental para entender o comportamento estatístico dos ativos financeiros. Essa análise nos permite identificar características importantes, como a presença de assimetria e caudas pesadas. <mark>Por exemplo, uma assimetria negativa indica que os retornos tendem a oscilar mais para valores baixos, sugerindo um risco maior de perdas acentuadas, enquanto uma assimetria positiva indica uma tendência para oscilações para valores mais altos</mark>. Além disso, observar a forma da distribuição ajuda a avaliar se a hipótese de normalidade é válida ou se é necessário adotar distribuições alternativas, como a distribuição $t$ de Student, que captura melhor a ocorrência de eventos extremos. Essa compreensão é crucial para a modelagem de riscos, desenvolvimento de estratégias de investimento e aprimoramento dos modelos econométricos utilizados na previsão dos preços.\n"
       ],
-      "id": "473fcd0a"
+      "id": "0ecc406d"
     },
     {
       "cell_type": "code",
-      "metadata": {},
+      "metadata": {
+        "md-indent": "    "
+      },
       "source": [
         "# Seleciona apenas as colunas dos ativos (excluindo a coluna \"date\")\n",
         "ativos = log_returns.columns[1:]\n",
@@ -297,7 +295,7 @@
         "# Exibe a tabela atualizada\n",
         "skew_table"
       ],
-      "id": "fbab2d96",
+      "id": "d53587a2",
       "execution_count": null,
       "outputs": []
     },
@@ -305,16 +303,18 @@
       "cell_type": "markdown",
       "metadata": {},
       "source": [
-        "Agora teremos que ver se o range de nossa seleção de análise terá mais retornos positivos do que negativos, olhando os histogramas:\n",
+        "    Agora teremos que ver se o range de nossa seleção de análise terá mais retornos positivos do que negativos, olhando os histogramas:\n",
         "\n",
-        "```         \n",
-        "```\n"
+        "    ```         \n",
+        "    ```\n"
       ],
-      "id": "57540833"
+      "id": "75a2be3d"
     },
     {
       "cell_type": "code",
-      "metadata": {},
+      "metadata": {
+        "md-indent": "    "
+      },
       "source": [
         "#| eval: false\n",
         "\n",
@@ -338,7 +338,7 @@
         "plt.tight_layout()\n",
         "plt.show()"
       ],
-      "id": "d7779ccf",
+      "id": "6e1948ad",
       "execution_count": null,
       "outputs": []
     },
@@ -346,31 +346,33 @@
       "cell_type": "markdown",
       "metadata": {},
       "source": [
-        "Como medida de risco, utilizamos as variâncias condicionais (volatilidades) para lidar melhor com a variação diária dos log-retornos dos preços.\n",
+        "    Como medida de risco, utilizamos as variâncias condicionais (volatilidades) para lidar melhor com a variação diária dos log-retornos dos preços.\n",
         "\n",
-        "### Volatilidade com desvio-padrão\n",
+        "    ### Volatilidade com desvio-padrão\n",
         "\n",
-        "A volatilidade histórica pode ser medida como o desvio-padrão dos log-retornos calculado em uma janela móvel de $N$ dias de negociação.\n",
+        "    A volatilidade histórica pode ser medida como o desvio-padrão dos log-retornos calculado em uma janela móvel de $N$ dias de negociação.\n",
         "\n",
-        "Neste exemplo, adotamos uma janela móvel de 5 dias (aproximadamente uma semana de negociação. Para um mês de negociação, utilizar 22 e um ano 252) para capturar a volatilidade diária dos ativos.\n",
+        "    Neste exemplo, adotamos uma janela móvel de 5 dias (aproximadamente uma semana de negociação. Para um mês de negociação, utilizar 22 e um ano 252) para capturar a volatilidade diária dos ativos.\n",
         "\n",
-        "**Vantagens:**\n",
+        "    **Vantagens:**\n",
         "\n",
-        "-   Simplicidade e facilidade de implementação.\n",
+        "    -   Simplicidade e facilidade de implementação.\n",
         "\n",
-        "**Desvantagens:**\n",
+        "    **Desvantagens:**\n",
         "\n",
-        "-   Assume volatilidade constante durante a janela.\n",
+        "    -   Assume volatilidade constante durante a janela.\n",
         "\n",
-        "-   Não capta a persistência dos choques.\n",
+        "    -   Não capta a persistência dos choques.\n",
         "\n",
-        "-   Não reage dinamicamente a choques recentes.\n"
+        "    -   Não reage dinamicamente a choques recentes.\n"
       ],
-      "id": "ce2f5f5e"
+      "id": "e9fe5f22"
     },
     {
       "cell_type": "code",
-      "metadata": {},
+      "metadata": {
+        "md-indent": "    "
+      },
       "source": [
         "# Calcular a volatilidade histórica com uma janela móvel de 5 dias\n",
         "\n",
@@ -388,7 +390,7 @@
         "#print(vol_hist.head()) # 5 primeiros serão NaN\n",
         "print(vol_hist.tail())"
       ],
-      "id": "35f3865b",
+      "id": "a6858334",
       "execution_count": null,
       "outputs": []
     },
@@ -396,16 +398,15 @@
       "cell_type": "markdown",
       "metadata": {},
       "source": [
-        "Plotando temos:\n",
-        "\n",
-        "```         \n",
-        "```\n"
+        "    Plotando temos:\n"
       ],
-      "id": "f234f7bd"
+      "id": "1b785620"
     },
     {
       "cell_type": "code",
-      "metadata": {},
+      "metadata": {
+        "md-indent": "    "
+      },
       "source": [
         "#| eval: false\n",
         "\n",
@@ -420,7 +421,7 @@
         "              title='Volatilidade Histórica (Desvio-Padrão) com janela de 5 dias')\n",
         "fig.show()"
       ],
-      "id": "4989c929",
+      "id": "0df8f7d8",
       "execution_count": null,
       "outputs": []
     },
@@ -428,44 +429,46 @@
       "cell_type": "markdown",
       "metadata": {},
       "source": [
-        "### Volatilidade com GARCH(1,1)\n",
+        "    ### Volatilidade com GARCH(1,1)\n",
         "\n",
-        "O desvio-padrão assume que precisaremos de um range maior do que 2 pontos no tempo, o que limita nossa análise pois a incompatibiliza, uma vez que precisaremos comparar os riscos diários x retornos diários (como feito anteriormente). Ou seja, não podemos comparar retornos dia-a-dia x volatilidades (risco) de 5 em 5 dias p. ex.\n",
+        "    O desvio-padrão assume que precisaremos de um range maior do que 2 pontos no tempo, o que limita nossa análise pois a incompatibiliza, uma vez que precisaremos comparar os riscos diários x retornos diários (como feito anteriormente). Ou seja, não podemos comparar retornos dia-a-dia x volatilidades (risco) de 5 em 5 dias p. ex.\n",
         "\n",
-        "Os modelos heterocedásticos (da família ARCH) estimam a variância condicional dos nossos dados, ou seja, em linguagem de finanças, eles são capazes de capturar as volatilidades ou risco dos retornos dos preços de ativos financeiros ponto a ponto no tempo, ou seja, dia a dia.\n",
+        "    Os modelos heterocedásticos (da família ARCH) estimam a variância condicional dos nossos dados, ou seja, em linguagem de finanças, eles são capazes de capturar as volatilidades ou risco dos retornos dos preços de ativos financeiros ponto a ponto no tempo, ou seja, dia a dia.\n",
         "\n",
-        "O modelo GARCH(1,1) com distribuição $t$ assimétrica não está disponível diretamente na maioria das bibliotecas Python. No entanto, podemos utilizar um GARCH(1,1) com uma distribuição $t$ padrão para estimar a variância condicional. O modelo é representado por:\n",
+        "    O modelo GARCH(1,1) com distribuição $t$ assimétrica não está disponível diretamente na maioria das bibliotecas Python. No entanto, podemos utilizar um GARCH(1,1) com uma distribuição $t$ padrão para estimar a variância condicional. O modelo é representado por:\n",
         "\n",
-        "$$\n",
-        "r_t = \\mu + \\epsilon_t\n",
-        "$$\n",
+        "    $$\n",
+        "    r_t = \\mu + \\epsilon_t\n",
+        "    $$\n",
         "\n",
-        "$$\n",
-        "\\epsilon_t = \\sigma_t z_t, \\quad z_t \\sim t_{\\nu}(0, 1)\n",
-        "$$\n",
+        "    $$\n",
+        "    \\epsilon_t = \\sigma_t z_t, \\quad z_t \\sim t_{\\nu}(0, 1)\n",
+        "    $$\n",
         "\n",
-        "$$\n",
-        "\\sigma_t^2 = \\omega + \\alpha \\epsilon_{t-1}^2 + \\beta \\sigma_{t-1}^2\n",
-        "$$\n",
+        "    $$\n",
+        "    \\sigma_t^2 = \\omega + \\alpha \\epsilon_{t-1}^2 + \\beta \\sigma_{t-1}^2\n",
+        "    $$\n",
         "\n",
-        "Onde:\n",
+        "    Onde:\n",
         "\n",
-        "-   $r_t$ é o log-retorno no tempo $t$.\n",
-        "-   $\\mu$ é a média dos retornos.\n",
-        "-   $\\epsilon_t$ é o termo de erro, condicionado às informações passadas.\n",
-        "-   $\\sigma_t^2$ é a variância condicional no tempo $t$.\n",
-        "-   $\\omega, \\alpha, \\beta$ são os parâmetros a serem estimados, com $\\omega > 0, \\alpha \\geq 0, \\beta \\geq 0$.\n",
-        "-   $z_t$ segue uma distribuição $t$ de Student com $ν$ graus de liberdade para capturar as caudas pesadas observadas em retornos financeiros.\n",
+        "    -   $r_t$ é o log-retorno no tempo $t$.\n",
+        "    -   $\\mu$ é a média dos retornos.\n",
+        "    -   $\\epsilon_t$ é o termo de erro, condicionado às informações passadas.\n",
+        "    -   $\\sigma_t^2$ é a variância condicional no tempo $t$.\n",
+        "    -   $\\omega, \\alpha, \\beta$ são os parâmetros a serem estimados, com $\\omega > 0, \\alpha \\geq 0, \\beta \\geq 0$.\n",
+        "    -   $z_t$ segue uma distribuição $t$ de Student com $ν$ graus de liberdade para capturar as caudas pesadas observadas em retornos financeiros.\n",
         "\n",
-        "A soma $\\alpha + \\beta$ é frequentemente utilizada para medir a persistência da volatilidade: quanto mais próximos de 1, maior a persistência dos choques na volatilidade.\n",
+        "    A soma $\\alpha + \\beta$ é frequentemente utilizada para medir a persistência da volatilidade: quanto mais próximos de 1, maior a persistência dos choques na volatilidade.\n",
         "\n",
-        "Vamos estimar a variância condicional ($\\sigma^2_{t}$ ) para cada ativo:\n"
+        "    Vamos estimar a variância condicional ($\\sigma^2_{t}$ ) para cada ativo:\n"
       ],
-      "id": "7dfea8f2"
+      "id": "2e716580"
     },
     {
       "cell_type": "code",
-      "metadata": {},
+      "metadata": {
+        "md-indent": "    "
+      },
       "source": [
         "# Estimar o modelo GARCH(1,1) e salvar variância condicional\n",
         "var_condicional = pd.DataFrame({\"date\": log_returns[\"date\"]})\n",
@@ -477,7 +480,7 @@
         "\n",
         "var_condicional.head()"
       ],
-      "id": "f6dd9de2",
+      "id": "cbae536e",
       "execution_count": null,
       "outputs": []
     },
@@ -485,13 +488,15 @@
       "cell_type": "markdown",
       "metadata": {},
       "source": [
-        "Vamos avaliar os parâmetros estimados do modelo:\n"
+        "    Vamos avaliar os parâmetros estimados do modelo:\n"
       ],
-      "id": "c2ac3d45"
+      "id": "394df167"
     },
     {
       "cell_type": "code",
-      "metadata": {},
+      "metadata": {
+        "md-indent": "    "
+      },
       "source": [
         "# Inferir sobre os parâmetros do modelo GARCH(1,1) para cada ativo do portfólio\n",
         "\n",
@@ -526,7 +531,7 @@
         "\n",
         "garch_params = pd.DataFrame(params_list)"
       ],
-      "id": "897c7282",
+      "id": "944c019e",
       "execution_count": null,
       "outputs": []
     },
@@ -534,30 +539,29 @@
       "cell_type": "markdown",
       "metadata": {},
       "source": [
-        "A soma $\\alpha + \\beta$ é um indicador crucial na modelagem GARCH para avaliar a persistência da volatilidade. Em termos práticos, os parâmetros $\\alpha$ e $\\beta$ têm funções distintas:\n",
+        "    A soma $\\alpha + \\beta$ é um indicador crucial na modelagem GARCH para avaliar a persistência da volatilidade. Em termos práticos, os parâmetros $\\alpha$ e $\\beta$ têm funções distintas:\n",
         "\n",
-        "-   $\\alpha$: Representa o impacto dos choques recentes (a inovação ou termo de erro $\\epsilon_{t-1}^2$ na volatilidade atual. Um valor mais alto de $\\alpha$ indica que choques recentes têm um efeito maior em aumentar a volatilidade.\n",
-        "-   $\\beta$: Captura a persistência da volatilidade ao longo do tempo, ou seja, o efeito da volatilidade passada ($\\sigma_{t-1}^2)$ sobre a volatilidade presente. Valores maiores de $\\beta$ sugerem que a volatilidade tende a se manter elevada por um período mais longo.\n",
+        "    -   $\\alpha$: Representa o impacto dos choques recentes (a inovação ou termo de erro $\\epsilon_{t-1}^2$ na volatilidade atual. Um valor mais alto de $\\alpha$ indica que choques recentes têm um efeito maior em aumentar a volatilidade.\n",
+        "    -   $\\beta$: Captura a persistência da volatilidade ao longo do tempo, ou seja, o efeito da volatilidade passada ($\\sigma_{t-1}^2)$ sobre a volatilidade presente. Valores maiores de $\\beta$ sugerem que a volatilidade tende a se manter elevada por um período mais longo.\n",
         "\n",
-        "Quando somamos esses dois parâmetros, ou seja, quando calculamos $\\alpha + \\beta$, obtemos uma medida da persistência total da volatilidade:\n",
+        "    Quando somamos esses dois parâmetros, ou seja, quando calculamos $\\alpha + \\beta$, obtemos uma medida da persistência total da volatilidade:\n",
         "\n",
-        "-   Se $\\alpha + \\beta$ estiver **próximo de 1**, isso indica que os choques que afetam a volatilidade têm efeitos de longa duração. Em outras palavras, um choque na volatilidade tem um impacto que se dissipa muito lentamente, mantendo a volatilidade elevada por vários períodos.\n",
-        "-   Se $\\alpha + \\beta$ for **significativamente menor que 1**, os efeitos dos choques são de curta duração e a volatilidade retorna rapidamente ao seu nível médio após um impacto.\n",
+        "    -   Se $\\alpha + \\beta$ estiver **próximo de 1**, isso indica que os choques que afetam a volatilidade têm efeitos de longa duração. Em outras palavras, um choque na volatilidade tem um impacto que se dissipa muito lentamente, mantendo a volatilidade elevada por vários períodos.\n",
+        "    -   Se $\\alpha + \\beta$ for **significativamente menor que 1**, os efeitos dos choques são de curta duração e a volatilidade retorna rapidamente ao seu nível médio após um impacto.\n",
         "\n",
-        "Em alguns casos, quando $\\alpha + \\beta = 1$, o modelo é denominado **IGARCH** (Integrated GARCH), o que implica que os choques têm efeitos persistentes permanentemente, ou seja, a volatilidade não reverte para um valor médio fixo.\n",
+        "    Em alguns casos, quando $\\alpha + \\beta = 1$, o modelo é denominado **IGARCH** (Integrated GARCH), o que implica que os choques têm efeitos persistentes permanentemente, ou seja, a volatilidade não reverte para um valor médio fixo.\n",
         "\n",
-        "Esta característica é particularmente importante na análise de séries financeiras, pois a persistência alta da volatilidade pode implicar maior risco de mercado e desafios na previsão dos retornos futuros. Assim, a soma $\\alpha + \\beta$ serve como uma medida de \"memória\" dos choques, indicando se a volatilidade reage de forma passageira ou duradoura a eventos inesperados.\n",
+        "    Esta característica é particularmente importante na análise de séries financeiras, pois a persistência alta da volatilidade pode implicar maior risco de mercado e desafios na previsão dos retornos futuros. Assim, a soma $\\alpha + \\beta$ serve como uma medida de \"memória\" dos choques, indicando se a volatilidade reage de forma passageira ou duradoura a eventos inesperados.\n",
         "\n",
-        "Graficamente temos:\n",
-        "\n",
-        "```         \n",
-        "```\n"
+        "    Graficamente temos:\n"
       ],
-      "id": "08c1f5d9"
+      "id": "3e1b4b2c"
     },
     {
       "cell_type": "code",
-      "metadata": {},
+      "metadata": {
+        "md-indent": "    "
+      },
       "source": [
         "#| eval: false\n",
         "\n",
@@ -566,8 +570,8 @@
         "from plotly.subplots import make_subplots\n",
         "\n",
         "# Para o ativo \"ZC=F\"\n",
-        "returns_zc = log_returns[['date', 'BEEF3.SA']].copy()\n",
-        "vol_zc = var_condicional[['date', 'BEEF3.SA']].copy()\n",
+        "returns_zc = log_returns[['date', 'BRFS3.SA']].copy()\n",
+        "vol_zc = var_condicional[['date', 'BRFS3.SA']].copy()\n",
         "\n",
         "# Converter \"date\" para datetime, se necessário\n",
         "returns_zc['date'] = pd.to_datetime(returns_zc['date'])\n",
@@ -578,25 +582,25 @@
         "    rows=2, cols=1,\n",
         "    shared_xaxes=True,\n",
         "    vertical_spacing=0.05,\n",
-        "    subplot_titles=(\"Retornos Diários - BEEF3.SA\", \"Volatilidade Condicional (GARCH) - BEEF3.SA\")\n",
+        "    subplot_titles=(\"Retornos Diários - BRFS3.SA\", \"Volatilidade Condicional (GARCH) - BRFS3.SA\")\n",
         ")\n",
         "\n",
         "# Adicionar o gráfico de retornos\n",
         "fig.add_trace(\n",
-        "    go.Scatter(x=returns_zc['date'], y=returns_zc['BEEF3.SA'], mode='lines', name='Retornos'),\n",
+        "    go.Scatter(x=returns_zc['date'], y=returns_zc['BRFS3.SA'], mode='lines', name='Retornos'),\n",
         "    row=1, col=1\n",
         ")\n",
         "\n",
         "# Adicionar o gráfico de volatilidade condicional\n",
         "fig.add_trace(\n",
-        "    go.Scatter(x=vol_zc['date'], y=vol_zc['BEEF3.SA'], mode='lines', name='Volatilidade'),\n",
+        "    go.Scatter(x=vol_zc['date'], y=vol_zc['BRFS3.SA'], mode='lines', name='Volatilidade'),\n",
         "    row=2, col=1\n",
         ")\n",
         "\n",
         "fig.update_layout(\n",
         "    height=600,\n",
         "    width=900,\n",
-        "    title_text=\"Retorno vs. Volatilidade (GARCH) - BEEF3.SA\",\n",
+        "    title_text=\"Retorno vs. Volatilidade (GARCH) - BRFS3.SA\",\n",
         "    xaxis2_title=\"Data\",\n",
         "    yaxis1_title=\"Retorno\",\n",
         "    yaxis2_title=\"Volatilidade Condicional\"\n",
@@ -604,7 +608,7 @@
         "\n",
         "fig.show()\n"
       ],
-      "id": "a57ab494",
+      "id": "ffc62651",
       "execution_count": null,
       "outputs": []
     },
@@ -612,27 +616,24 @@
       "cell_type": "markdown",
       "metadata": {},
       "source": [
-        "Em alguns casos, a variância condicional pode apresentar grandes oscilações se houver outliers nos retornos ou problemas de convergência do modelo. Verifique:\n",
+        "    Em alguns casos, a variância condicional pode apresentar grandes oscilações se houver outliers nos retornos ou problemas de convergência do modelo. Verifique:\n",
         "\n",
-        "-   Qualidade e limpeza dos dados\n",
-        "-   Resumo do ajuste (parâmetros $\\alpha,\\beta$ plausíveis?)\n",
-        "-   Distribuição ($t$ vs. normal)\n",
-        "-   Modelos alternativos (EGARCH, GJR-GARCH, etc.)\n",
+        "    -   Qualidade e limpeza dos dados\n",
+        "    -   Resumo do ajuste (parâmetros $\\alpha,\\beta$ plausíveis?)\n",
+        "    -   Distribuição ($t$ vs. normal)\n",
+        "    -   Modelos alternativos (EGARCH, GJR-GARCH, etc.)\n",
         "\n",
-        "### Plotando retorno x risco\n",
+        "    ### Plotando retorno x risco\n",
         "\n",
-        "Aqui iremos visualizar o comportamento do ativo `ZC=F`, futuros de milho:\n",
-        "\n",
-        "```         \n",
-        "```\n",
-        "\n",
-        "Esse gráfico em Python, pode ser obtido com:\n"
+        "    Aqui iremos visualizar o comportamento do ativo `ZC=F`, futuros de milho:\n"
       ],
-      "id": "69b01326"
+      "id": "8ff727de"
     },
     {
       "cell_type": "code",
-      "metadata": {},
+      "metadata": {
+        "md-indent": "    "
+      },
       "source": [
         "#| eval: false\n",
         "\n",
@@ -640,8 +641,8 @@
         "from plotly.subplots import make_subplots\n",
         "\n",
         "# Para o ativo \"ZC=F\"\n",
-        "returns_zc = log_returns[['date', 'BEEF3.SA']].copy()\n",
-        "vol_zc = var_condicional[['date', 'BEEF3.SA']].copy()\n",
+        "returns_zc = log_returns[['date', 'BRFS3.SA']].copy()\n",
+        "vol_zc = var_condicional[['date', 'BRFS3.SA']].copy()\n",
         "\n",
         "# Converter \"date\" para datetime, se necessário\n",
         "returns_zc['date'] = pd.to_datetime(returns_zc['date'])\n",
@@ -652,25 +653,25 @@
         "    rows=2, cols=1,\n",
         "    shared_xaxes=True,\n",
         "    vertical_spacing=0.05,\n",
-        "    subplot_titles=(\"Retornos Diários - BEEF3.SA\", \"Volatilidade Condicional (GARCH) - BEEF3.SA\")\n",
+        "    subplot_titles=(\"Retornos Diários - BRFS3.SA\", \"Volatilidade Condicional (GARCH) - BRFS3.SA\")\n",
         ")\n",
         "\n",
         "# Adicionar o gráfico de retornos\n",
         "fig.add_trace(\n",
-        "    go.Scatter(x=returns_zc['date'], y=returns_zc['BEEF3.SA'], mode='lines', name='Retornos'),\n",
+        "    go.Scatter(x=returns_zc['date'], y=returns_zc['BRFS3.SA'], mode='lines', name='Retornos'),\n",
         "    row=1, col=1\n",
         ")\n",
         "\n",
         "# Adicionar o gráfico de volatilidade condicional\n",
         "fig.add_trace(\n",
-        "    go.Scatter(x=vol_zc['date'], y=vol_zc['BEEF3.SA'], mode='lines', name='Volatilidade'),\n",
+        "    go.Scatter(x=vol_zc['date'], y=vol_zc['BRFS3.SA'], mode='lines', name='Volatilidade'),\n",
         "    row=2, col=1\n",
         ")\n",
         "\n",
         "fig.update_layout(\n",
         "    height=600,\n",
         "    width=900,\n",
-        "    title_text=\"Retorno vs. Volatilidade (GARCH) - BEEF3.SA\",\n",
+        "    title_text=\"Retorno vs. Volatilidade (GARCH) - BRFS3.SA\",\n",
         "    xaxis2_title=\"Data\",\n",
         "    yaxis1_title=\"Retorno\",\n",
         "    yaxis2_title=\"Volatilidade Condicional\"\n",
@@ -678,7 +679,7 @@
         "\n",
         "fig.show()"
       ],
-      "id": "b17bbf0f",
+      "id": "29dcb839",
       "execution_count": null,
       "outputs": []
     },
@@ -686,7 +687,10 @@
       "cell_type": "markdown",
       "metadata": {},
       "source": [
-        ":::\n",
+        "    Notem como o GARCH(1,1) captura bem os picos/quebras e na volatilidade dos retornos.\n",
+        "    :::\n",
+        "\n",
+        " \n",
         "\n",
         "------------------------------------------------------------------------\n",
         "\n",
@@ -696,9 +700,9 @@
         "\n",
         "Gujarati, D. N., & Porter, D. C. (2009). **Basic econometrics** (5th ed.). McGraw-Hill.\n",
         "\n",
-        "Hyndman, R.J., & Athanasopoulos, G. (2021) **Forecasting: principles and practice**, 3rd edition, OTexts: Melbourne, Australia. OTexts.com/fpp3. Accessed on march 2025.\\"
+        "Hyndman, R.J., & Athanasopoulos, G. (2021) **Forecasting: principles and practice**, 3rd edition, OTexts: Melbourne, Australia. OTexts.com/fpp3. Accessed on march 2025."
       ],
-      "id": "56fb2d1a"
+      "id": "db514e20"
     }
   ],
   "metadata": {

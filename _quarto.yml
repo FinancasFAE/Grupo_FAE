@@ -7,7 +7,7 @@ website:
     left:
       - href: index.qmd
         text: 🏠 Home
-      - href: Terceiro_Encontro.qmd
+      - href: FeatEngFinancial.qmd
         text: Feature Engineering
       - href: about.qmd
         text: ℹ️ Sobre
