@@ -11,9 +11,9 @@ website:
         text: Sobre
       - href: appdash.qmd
         text: Dashboard
-      - href: page3.qmd
-        text: Logs de Retorno
       - href: page2.qmd
+        text: Logs de Retorno
+      - href: page3.qmd
         text: Futuro
     right:
       - icon: github
