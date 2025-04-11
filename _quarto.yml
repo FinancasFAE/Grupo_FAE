@@ -7,10 +7,10 @@ website:
     left:
       - href: index.qmd
         text: Home
+      - href: about.qmd
+        text: Sobre
       - href: appdash.qmd
         text: Dashboard
-      - href: about.qmd
-        text: Sobre 
       - href: page3.qmd
         text: Logs de Retorno
       - href: page2.qmd
