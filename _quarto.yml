@@ -8,7 +8,9 @@ website:
       - href: index.qmd
         text: Home
       - href: about.qmd
-        text: Sobre  
+        text: Dashboard
+      - href: appdash.qmd
+        text: Sobre 
       - href: page3.qmd
         text: Logs de Retorno
       - href: page2.qmd
