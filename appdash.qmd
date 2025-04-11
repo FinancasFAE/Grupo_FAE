@@ -14,8 +14,5 @@ format:
 
 # 📈 Dashboard Interativo
 
-<iframe src="https://appdash-q5gfewuagqikcjrgf3pyvm.streamlit.app/"
-        width="100%" height="800px" style="border:none;">
-</iframe>
-
+[<i class="fas fa-external-link-alt"></i> Acesse o Dashboard Interativo aqui](https://appdash-q5gfewuagqikcjrgf3pyvm.streamlit.app/)
 ---
