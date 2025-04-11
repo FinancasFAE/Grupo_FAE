@@ -7,12 +7,12 @@ website:
     left:
       - href: index.qmd
         text: Home
+      - href: about.qmd
+        text: Sobre  
+      - href: page3.qmd
+        text: Logs de Retorno
       - href: page2.qmd
-        text: Análise de futuro
-      - href: about.qmd
-        text: outra página
-      - href: about.qmd
-        text: Sobre
+        text: Futuro
     right:
       - icon: github
         href: "https://github.com/FinancasFae"
