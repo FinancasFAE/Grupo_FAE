@@ -6,11 +6,11 @@ website:
   navbar:
     left:
       - href: index.qmd
-        text: 🏠 Home
+        text: Home
       - href: page2.qmd
         text: Análise futura
       - href: about.qmd
-        text: ℹ️ Sobre
+        text: Sobre
     right:
       - icon: github
         href: "https://github.com/FinancasFae"
