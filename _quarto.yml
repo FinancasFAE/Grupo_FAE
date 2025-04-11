@@ -7,9 +7,9 @@ website:
     left:
       - href: index.qmd
         text: Home
-      - href: about.qmd
-        text: Dashboard
       - href: appdash.qmd
+        text: Dashboard
+      - href: about.qmd
         text: Sobre 
       - href: page3.qmd
         text: Logs de Retorno
