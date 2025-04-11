@@ -37,7 +37,7 @@ Converter a série de preços em log-retornos utilizando a seguinte fórmula:
 
 Essa transformação nos permite analisar os retornos percentuais de forma mais adequada.
 
-![](images/Captura de tela 2025-04-11 161208-01.png)
+![](images/Captura%20de%20tela%202025-04-11%20161208-01.png)
 
 ### 2️⃣ Construção e Avaliação das Distribuições
 
@@ -55,19 +55,9 @@ Calcular a variância da série de retornos logarítmicos utilizando:
 
 -   🔹 Ou de maneira mais acurada, modelos econométricos (ex.: GARCH(1,1)) para obter a variância condicional.
 
-date BEEF3.SA BRFS3.SA GIS HRL JBSS3.SA MRFG3.SA \\
-1238 2025-03-14 0.031093 0.024722 0.024976 0.014724 0.015667 0.024863
-1239 2025-03-17 0.031816 0.026581 0.028208 0.015502 0.016132 0.028757
-1240 2025-03-18 0.022213 0.040627 0.021501 0.014557 0.073009 0.036127
-1241 2025-03-19 0.021905 0.039398 0.015938 0.007907 0.073728 0.035161
-1242 2025-03-20 0.033103 0.034645 0.016877 0.007681 0.071088 0.039908
+date BEEF3.SA BRFS3.SA GIS HRL JBSS3.SA MRFG3.SA \\ 1238 2025-03-14 0.031093 0.024722 0.024976 0.014724 0.015667 0.024863 1239 2025-03-17 0.031816 0.026581 0.028208 0.015502 0.016132 0.028757 1240 2025-03-18 0.022213 0.040627 0.021501 0.014557 0.073009 0.036127 1241 2025-03-19 0.021905 0.039398 0.015938 0.007907 0.073728 0.035161 1242 2025-03-20 0.033103 0.034645 0.016877 0.007681 0.071088 0.039908
 
-TSN
-1238 0.011254
-1239 0.011458
-1240 0.011033
-1241 0.006089
-1242 0.006956
+TSN 1238 0.011254 1239 0.011458 1240 0.011033 1241 0.006089 1242 0.006956
 :::
 
 ::: panel-tabset
@@ -75,7 +65,7 @@ TSN
 
 -   📉 **Gráficos de séries temporais de preços:**
 
-    ![](images/Captura de tela 2025-04-11 161441-01.png)
+    ![](images/Captura%20de%20tela%202025-04-11%20161441-01.png)
 :::
 
  
