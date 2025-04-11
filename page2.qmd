@@ -21,428 +21,62 @@ editor: visual
 
 <font size = 1>
 
-teste de futuro para as ações
+# Análise de Séries de Preços e Log-Retornos
 
 </font>
 :::
 
 # Intro
 
-escrever
-
 ::: panel-tabset
-## R
+### 1️⃣ Conversão para Log-Retornos
 
-```{r setup, include=FALSE}
+Converter a série de preços em log-retornos utilizando a seguinte fórmula:
 
-knitr::opts_chunk$set(
-	echo = TRUE,
-	message = FALSE,
-	warning = FALSE,
-	comment = NA
-)
-knitr::opts_chunk$set(comment = NA)    # Remove all coments # of R outputs
-knitr::opts_chunk$set(warning = FALSE) # Remove all warnings # of R outputs
-knitr::opts_chunk$set(message = FALSE) # Remove all messages # of R outputs
+\[ p_t = \\ln(p_t) - \\ln(p\_{t-1}) \]
 
-```
+Essa transformação nos permite analisar os retornos percentuais de forma mais adequada.
 
-```{r}
+![](images/Captura de tela 2025-04-11 161208-01.png)
 
-library(tidyverse)
-library(tidymodels)
-library(modeltime)
-library(timetk)
-library(purrr)
-library(tidyquant)
-library(tsibble)
-library(prophet)
-library(feasts)
-library(fable)
-library(fabletools)
-library(lubridate)
-library(tictoc)
+### 2️⃣ Construção e Avaliação das Distribuições
 
-```
+-   Construir os histogramas de cada série de retornos transformada.
 
-Carregamos os dados:
+-   Avaliar a assimetria das distribuições e identificar se há predominância de retornos positivos ou negativos no período analisado.
 
-```{r}
+![](images/download-01.png)
 
-tickers <- c(
-         "BRFS3.SA",
-  "JBSS3.SA",
-  "BEEF3.SA",
-  "MRFG3.SA",
-  "TSN",
-  "HRL",
-  "GIS"
-)
-```
+### 3️⃣ Cálculo da Variância
 
-Então baixo os dados via Yahoo!Finance:
+Calcular a variância da série de retornos logarítmicos utilizando:
 
-```{r}
+-   🔹 O desvio padrão como medida direta (volatilidade histórica com janela de 5 dias).
 
-portfolioPrices <- NULL
-  for ( Ticker in tickers )
-    portfolioPrices <- cbind(
-      portfolioPrices, 
-      quantmod::getSymbols.yahoo(
-        Ticker,
-        from = "2019-01-01",
-        auto.assign = FALSE
-      )[,4]
-    )
+-   🔹 Ou de maneira mais acurada, modelos econométricos (ex.: GARCH(1,1)) para obter a variância condicional.
 
-portfolioPrices <- portfolioPrices[apply(portfolioPrices, 1, function(x) all(!is.na(x))),]
+date BEEF3.SA BRFS3.SA GIS HRL JBSS3.SA MRFG3.SA \\
+1238 2025-03-14 0.031093 0.024722 0.024976 0.014724 0.015667 0.024863
+1239 2025-03-17 0.031816 0.026581 0.028208 0.015502 0.016132 0.028757
+1240 2025-03-18 0.022213 0.040627 0.021501 0.014557 0.073009 0.036127
+1241 2025-03-19 0.021905 0.039398 0.015938 0.007907 0.073728 0.035161
+1242 2025-03-20 0.033103 0.034645 0.016877 0.007681 0.071088 0.039908
 
-colnames(portfolioPrices) <- c(
-  "BRFS3.SA",
-  "JBSS3.SA",
-  "BEEF3.SA",
-  "MRFG3.SA",
-  "TSN",
-  "HRL",
-  "GIS"
-)
-
-# Visualizar com DT
-#DT::datatable(tail(portfolioPrices), options = list(pageLength = 10, scrollX = TRUE)) 
-
-```
-
-Visualizando os dados dos nossos últimos retornos dos preços, temos:
-
-```{r fig.width=9, fig.height=9}
-
-log_returns <- log(portfolioPrices) - log(lag(portfolioPrices))
-log_returns <- na.omit(log_returns)
-log_returns <- log_returns |> 
-  timetk::tk_tbl(preserve_index = TRUE, rename_index = "date")
-
-tail(log_returns)
-
-```
-
-```{r fig.width=9, fig.height=9}
-
-ln_returns <- log_returns
-
-ln_returns |> as.data.frame() |>
-  dplyr::mutate(
-    time = seq_along( TSN )
-  ) |> select(-date) |>
-  tidyr::pivot_longer(
-    !time,
-    names_to = "Variables",
-    values_to = "Value"  
-      ) |>
-  dplyr::group_by(Variables) |>
-  timetk::plot_time_series(
-    time,
-    Value,
-    .interactive = F, # Change for TRUE for better visualization
-    .facet_ncol = 2,
-    .smooth = FALSE
-  ) +
-  ggplot2::theme(
-    strip.background = ggplot2::element_rect(fill = "white", colour = "white")
-  )
-
-```
-
-### Modelagem com fpp3 e validação cruzada temporal
-
-Precisaremos fazer um forecasting de curto prazo com nossos dados históricos de retornos pra formularmos nossas recomendações posteriores de compra, venda e espera:
-
--   Vamos começar com uma série por vez $\Rightarrow$ TSN
-
-```{r}
-
-# Primeiro converto pra tsibble
-
-lnretTSN <- log_returns |> 
-  select(date, TSN) |> 
-  as_tsibble(index = date)
-
-glimpse(lnretTSN)
-
-```
-
-```{r}
-
-treino <- lnretTSN |>
-  filter_index(~"2025-01-01")
-
-```
-
-War models
-
-```{r}
-
-tic()
-
-Modelos <- treino |>
-  model(
-    AjusteExp = ETS(TSN ~ error("A") + trend("N") + season("N")), # Ajuste Exponencial com auto
-    
-    AjExp_aditivo = ETS(TSN ~ error("A") + trend("A") + season("A")), # Ajuste Exponencial Aditivo
-    
-    AjExp_multiplicativo = ETS(TSN ~ error("M") + trend("A") + season("M")), # Ajuste Exponencial Multiplicativo
-    
-    Croston = CROSTON(TSN), # Modelo Croston
-    
-    HoltWinters = ETS(TSN ~ error("M") + trend("Ad") + season("M")), # Holt Winters
-    
-    Holt = ETS(TSN ~ error("A") + trend("A") + season("N")), # Holt
-    
-    HoltAmort = ETS(TSN ~ error("A") + trend("Ad", phi = 0.9) + season("N")), # Holt Amortecida
-    
-    Regr_Comp = TSLM(TSN ~ trend() + season()), # Regressao com tendencia e sazonalidade auto
-    
-    Regr_Harmonica = TSLM(TSN ~ trend() + fourier(K = 2)), # Regressao harmonica
-    
-    Regr_Quebras = TSLM(TSN ~ trend(knots = c(2018, 2019, 2020))), # Regressao com quebras estruturais
-    
-    Snaive = SNAIVE(TSN), # SNAIVE
-    
-    Naive = NAIVE(TSN), #NAIVE
-    
-    Media_Movel = ARIMA(TSN ~ pdq(0,0,1)), # Media Movel Simples
-    
-    autoARIMA = ARIMA(TSN, stepwise = FALSE, approx = FALSE), # Auto ARIMA
-    
-    autoARIMA_saz = ARIMA(TSN, stepwise = FALSE, approx = FALSE, seasonal = TRUE), # AutoARIMA Sazonal
-    
-    #    Regr_erros_ARIMA = auto.arima(TSN, xreg = fourier(K = 3), seasonal = FALSE), # Regressao com erros ARIMA
-    
-    ARIMA_saz_012011 = ARIMA(TSN ~ pdq(0,1,2) + PDQ(0,1,1)), # ARIMA Sazonal ordem 012011
-    
-    ARIMA_saz_210011 = ARIMA(TSN ~ pdq(2,1,0) + PDQ(0,1,1)), # ARIMA Sazonal ordem 210011
-    
-    ARIMA_saz_0301012 = ARIMA(TSN ~ 0 + pdq(3,0,1) + PDQ(0,1,2)), # ARIMA sazonal
-    
-    ARIMA_quad = ARIMA(TSN ~ I(trend()^2)), # ARIMA com tendencia temporal quadratica
-    
-    ARIMA_determ = ARIMA(TSN ~ 1 + trend() + pdq(d = 0)), # ARIMA com tendencia deterministica
-    
-    ARIMA_estocastico = ARIMA(TSN ~ pdq(d = 1)), # ARIMA com tendência estocastica
-    
-    Regr_Harm_dinamica = ARIMA(TSN ~ fourier(K=2) + PDQ(0,0,0)), # Regressao Harmonica Dinamica
-    
-    Regr_Harm_Din_MultSaz = ARIMA(TSN ~ PDQ(0, 0, 0) + pdq(d = 0) + fourier(period = 7*30, K = 10) + fourier(period = 7*30, K = 5)), 
-    
-    Regr_Harm_Din_Saz = ARIMA(TSN ~ PDQ(0, 0, 0) + pdq(d = 0) + fourier(period = "month", K = 10) +
-                                fourier(period = "year", K = 2) ), # Rgr Harm Mult Saz Complexa
-    
-#    Auto_Prophet = prophet(TSN), # Auto prophet
-    
-#    Prophet_mult = prophet(TSN ~ season(period = "month", order = 2, type = "multiplicative")),
-    
-#    Prophet_aditivo = prophet(TSN ~ season(period = "month", order = 2, type = "additive")),
-    
-#    Prophet_geom = prophet(TSN ~ growth("geometric") + season(period = "month", order = 2, type = "multiplicative")),
-    
-#    Prophet_memo = prophet(TSN ~ growth("geometric") + season(period = "month", order = 5) +
-#                             season(period = "year", order = 2, type = "multiplicative")),
-    
-    Modelo_VAR = VAR(TSN, ic = "bic"), # Vetor Autoregressivo 
-    
-    Random_Walk = RW(TSN ~ drift()), # Random Walk com drift
-    
-    Rede_Neural_AR = NNETAR(TSN, bootstrap =  TRUE)#, # Rede Neural com auto AR e bootstraping nos erros
-    
-    #    x11 = X_13ARIMA_SEATS(TSN ~ x11()) # X11 ARIMA Seats
-    
-  ) |>
-  
-  forecast(h = "24 months") # Horizonte de projecao para os proximos 30 dias apos corte no treino
-
-toc()  
-
-```
-
-Selecionamos o melhor modelo (1 fold de validação cruzada somente):
-
-```{r}
-
-Modelos |>
-  accuracy(lnretTSN) |>
-  arrange(RMSE) # Seleção da acuracia pelo menor RMSE para o conjunto de modelos
-
-```
-
-Gero um cenário com o modelo:
-
-```{r}
-
-fit <- lnretTSN |>
-  model(
-    Regr_Quebras = TSLM(TSN ~ trend(knots = c(2018, 2019, 2020))), # Regressao com quebras estruturais
-  )
-
-sim <- fit |> generate(h = 30, times = 5, bootstrap = TRUE)
-
-```
-
-Plotamos os forecasts com esse modelo pra três cenários distintos no futuro:
-
-```{r fig.width=9, fig.height=4}
-
-lnretTSN |>
-  filter_index("2025-01-01"~.) |>
-  ggplot(aes(x = date)) +
-  geom_line(aes(y = TSN)) +
-  geom_line(aes(y = .sim, colour = as.factor(.rep)),
-    data = sim) +
-  labs(title="Valores projetados de retornos de preços de contratos futuros da TSN", y="$US" ) +
-  guides(colour = "none")
-
-```
-
-```{r}
-
-# Primeiro converto pra tsibble
-
-lnretGIS <- log_returns |> 
-  select(date, GIS) |> 
-  as_tsibble(index = date)
-
-glimpse(lnretGIS)
-
-```
-
-```{r}
-treino <- lnretGIS |>
-  filter_index(~"2025-01-01")
-
-```
-
-```{r}
-tic()
-
-Modelos <- treino |>
-  model(
-    AjusteExp = ETS(GIS ~ error("A") + trend("N") + season("N")), # Ajuste Exponencial com auto
-    
-    AjExp_aditivo = ETS(GIS ~ error("A") + trend("A") + season("A")), # Ajuste Exponencial Aditivo
-    
-    AjExp_multiplicativo = ETS(GIS ~ error("M") + trend("A") + season("M")), # Ajuste Exponencial Multiplicativo
-    
-    Croston = CROSTON(GIS), # Modelo Croston
-    
-    HoltWinters = ETS(GIS ~ error("M") + trend("Ad") + season("M")), # Holt Winters
-    
-    Holt = ETS(GIS ~ error("A") + trend("A") + season("N")), # Holt
-    
-    HoltAmort = ETS(GIS ~ error("A") + trend("Ad", phi = 0.9) + season("N")), # Holt Amortecida
-    
-    Regr_Comp = TSLM(GIS ~ trend() + season()), # Regressao com tendencia e sazonalidade auto
-    
-    Regr_Harmonica = TSLM(GIS ~ trend() + fourier(K = 2)), # Regressao harmonica
-    
-    Regr_Quebras = TSLM(GIS ~ trend(knots = c(2018, 2019, 2020))), # Regressao com quebras estruturais
-    
-    Snaive = SNAIVE(GIS), # SNAIVE
-    
-    Naive = NAIVE(GIS), #NAIVE
-    
-    Media_Movel = ARIMA(GIS ~ pdq(0,0,1)), # Media Movel Simples
-    
-    autoARIMA = ARIMA(GIS, stepwise = FALSE, approx = FALSE), # Auto ARIMA
-    
-    autoARIMA_saz = ARIMA(GIS, stepwise = FALSE, approx = FALSE, seasonal = TRUE), # AutoARIMA Sazonal
-    
-    #    Regr_erros_ARIMA = auto.arima(TSN, xreg = fourier(K = 3), seasonal = FALSE), # Regressao com erros ARIMA
-    
-    ARIMA_saz_012011 = ARIMA(GIS ~ pdq(0,1,2) + PDQ(0,1,1)), # ARIMA Sazonal ordem 012011
-    
-    ARIMA_saz_210011 = ARIMA(GIS ~ pdq(2,1,0) + PDQ(0,1,1)), # ARIMA Sazonal ordem 210011
-    
-    ARIMA_saz_0301012 = ARIMA(GIS ~ 0 + pdq(3,0,1) + PDQ(0,1,2)), # ARIMA sazonal
-    
-    ARIMA_quad = ARIMA(GIS ~ I(trend()^2)), # ARIMA com tendencia temporal quadratica
-    
-    ARIMA_determ = ARIMA(GIS ~ 1 + trend() + pdq(d = 0)), # ARIMA com tendencia deterministica
-    
-    ARIMA_estocastico = ARIMA(GIS ~ pdq(d = 1)), # ARIMA com tendência estocastica
-    
-    Regr_Harm_dinamica = ARIMA(GIS ~ fourier(K=2) + PDQ(0,0,0)), # Regressao Harmonica Dinamica
-    
-    Regr_Harm_Din_MultSaz = ARIMA(GIS ~ PDQ(0, 0, 0) + pdq(d = 0) + fourier(period = 7*30, K = 10) + fourier(period = 7*30, K = 5)), 
-    
-    Regr_Harm_Din_Saz = ARIMA(GIS ~ PDQ(0, 0, 0) + pdq(d = 0) + fourier(period = "month", K = 10) +
-                                fourier(period = "year", K = 2) ), # Rgr Harm Mult Saz Complexa
-    
-#    Auto_Prophet = prophet(TSN), # Auto prophet
-    
-#    Prophet_mult = prophet(TSN ~ season(period = "month", order = 2, type = "multiplicative")),
-    
-#    Prophet_aditivo = prophet(TSN ~ season(period = "month", order = 2, type = "additive")),
-    
-#    Prophet_geom = prophet(TSN ~ growth("geometric") + season(period = "month", order = 2, type = "multiplicative")),
-    
-#    Prophet_memo = prophet(TSN ~ growth("geometric") + season(period = "month", order = 5) +
-#                             season(period = "year", order = 2, type = "multiplicative")),
-    
-    Modelo_VAR = VAR(GIS, ic = "bic"), # Vetor Autoregressivo 
-    
-    Random_Walk = RW(GIS ~ drift()), # Random Walk com drift
-    
-    Rede_Neural_AR = NNETAR(GIS, bootstrap =  TRUE)#, # Rede Neural com auto AR e bootstraping nos erros
-    
-    #    x11 = X_13ARIMA_SEATS(TSN ~ x11()) # X11 ARIMA Seats
-    
-  ) |>
-  
-  forecast(h = "24 months") # Horizonte de projecao para os proximos 30 dias apos corte no treino
-
-toc()  
-```
-
-```{r}
-fit <- lnretGIS |>
-  model(
-    Regr_Quebras = TSLM(GIS ~ trend(knots = c(2018, 2019, 2020))), # Regressao com quebras estruturais
-  )
-
-sim <- fit |> generate(h = 30, times = 5, bootstrap = TRUE)
-```
-
-```{r fig.width=9, fig.height=4}
-
-lnretTSN |>
-  filter_index("2025-01-01"~.) |>
-  ggplot(aes(x = date)) +
-  geom_line(aes(y = TSN)) +
-  geom_line(aes(y = .sim, colour = as.factor(.rep)),
-    data = sim) +
-  labs(title="Valores projetados de retornos de preços de contratos futuros da SALESFORCE", y="$US" ) +
-  guides(colour = "none")
-
-```
+TSN
+1238 0.011254
+1239 0.011458
+1240 0.011033
+1241 0.006089
+1242 0.006956
 :::
 
- 
+::: panel-tabset
+### 4️⃣ Visualizações
 
- 
+-   📉 **Gráficos de séries temporais de preços:**
 
-------------------------------------------------------------------------
-
-# References
-
-------------------------------------------------------------------------
-
-**Markowitz, H. (1952).** *Portfolio Selection*. The Journal of Finance, 7(1), 77–91.\
-[Link](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1540-6261.1952.tb01525.x)
-
-**Sharpe, W. F. (1966).** *Mutual Fund Performance*. The Journal of Business, 39(1), 119–138.\
-[Link](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1540-6261.1966.tb02865.x)
-
-**Elton, E. J., Gruber, M. J., Brown, S. J., & Goetzmann, W. N. (2007).** *Modern Portfolio Theory and Investment Analysis* (9th ed.). Wiley.
-
-**Hilpisch, Y. (2018).** *Python for Finance: Mastering Data-Driven Finance*. O'Reilly Media.
+    ![](images/Captura de tela 2025-04-11 161441-01.png)
+:::
 
  
 
