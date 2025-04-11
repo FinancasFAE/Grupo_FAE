@@ -7,8 +7,8 @@ website:
     left:
       - href: index.qmd
         text: 🏠 Home
-      - href: FeatEngFinancial.qmd
-        text: Feature Engineering
+      - href: page2.qmd
+        text: Análise futura
       - href: about.qmd
         text: ℹ️ Sobre
     right:
