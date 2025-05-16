@@ -15,7 +15,7 @@ website:
         text: Logs de Retorno
       - href: page3.qmd
         text: Futuro
-      - href: pagina4.qmd
+      - href: page4.qmd
         text: Forecasting
     right:
       - icon: github
