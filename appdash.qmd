@@ -14,5 +14,4 @@ format:
 
 # 📈 Dashboard Interativo
 
-[<i class="fas fa-external-link-alt"></i> Acesse o Dashboard Interativo aqui](https://appdash-q5gfewuagqikcjrgf3pyvm.streamlit.app/)
----
+## [<i class="fas fa-external-link-alt"></i> Acesse o Dashboard Interativo aqui](https://appdash-q5gfewuagqikcjrgf3pyvm.streamlit.app/)
