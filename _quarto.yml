@@ -15,6 +15,8 @@ website:
         text: Logs de Retorno
       - href: page3.qmd
         text: Futuro
+      - href: fuzzy_topsis_analise_acoes.qmd
+        text: Fuzzy Topsis
       - href: page4.qmd
         text: Forecasting
     right:

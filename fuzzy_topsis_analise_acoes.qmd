@@ -1,0 +1,139 @@
+---
+title: "Fuzzy TOPSIS - Análise de Ações"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    code-fold: true
+    code-summary: "Mostrar/Ocultar Código"
+editor: visual
+---
+
+## Bibliotecas
+
+```{python}
+import yfinance as yf
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+```
+
+## Download dos Dados
+
+```{python}
+# Tickers da carteira
+tickers = ['BRFS3.SA', 'JBSS3.SA', 'BEEF3.SA', 'MRFG3.SA', 'TSN', 'HRL', 'GIS']
+
+# Download dos preços históricos
+dados = yf.download(tickers, start="2024-10-01", end="2025-04-25", progress=False)
+
+# Verificação dos dados baixados
+if isinstance(dados.columns, pd.MultiIndex):
+    downloaded_tickers = dados.columns.levels[1].tolist()
+    available_tickers = [ticker for ticker in downloaded_tickers if not dados[('Close', ticker)].isnull().all()]
+else:
+    if not dados.empty:
+        available_tickers = [ticker for ticker in tickers if not dados[ticker].isnull().all()]
+    else:
+        available_tickers = []
+
+if not available_tickers:
+    raise ValueError("❌ Nenhum dado foi baixado. Verifique os tickers e o período.")
+
+print(f"✅ Dados baixados para: {', '.join(available_tickers)}")
+```
+
+## Preparação dos Dados
+
+```{python}
+precos = pd.DataFrame()
+
+for ticker in available_tickers:
+    if ('Adj Close', ticker) in dados.columns and (not dados[('Adj Close', ticker)].isnull().all()):
+        precos[ticker] = dados[('Adj Close', ticker)]
+    elif ('Close', ticker) in dados.columns and (not dados[('Close', ticker)].isnull().all()):
+        print(f"⚠️ Usando 'Close' para {ticker}, pois 'Adj Close' não está disponível.")
+        precos[ticker] = dados[('Close', ticker)]
+    else:
+        print(f"❌ Dados insuficientes para {ticker}. Ignorando.")
+
+if precos.empty:
+    raise ValueError("❌ Nenhuma coluna válida encontrada para análise.")
+
+precos = precos.dropna()
+
+if precos.empty:
+    raise ValueError("❌ Dados insuficientes após remoção de valores nulos.")
+```
+
+## Cálculo de Retornos
+
+```{python}
+retornos_diarios = precos.pct_change().dropna()
+
+if retornos_diarios.empty:
+    raise ValueError("❌ Retornos diários insuficientes.")
+
+retorno_medio_anual = (retornos_diarios.mean() * 252) * 100
+risco_anual = (retornos_diarios.std() * np.sqrt(252)) * 100
+
+df = pd.DataFrame({
+    'Ticker': retorno_medio_anual.index,
+    'Retorno Esperado (%)': retorno_medio_anual.values,
+    'Risco (%)': risco_anual.values
+})
+
+df
+```
+
+## Normalização e Pesos (Fuzzy TOPSIS)
+
+```{python}
+df_normalized = df.copy()
+
+scaler_ret = MinMaxScaler()
+df_normalized['Retorno Normalizado'] = scaler_ret.fit_transform(df[['Retorno Esperado (%)']])
+
+scaler_risk = MinMaxScaler()
+df_normalized['Risco Normalizado'] = 1 - scaler_risk.fit_transform(df[['Risco (%)']])
+
+peso_retorno = 0.6
+peso_risco = 0.4
+
+df_normalized['Retorno Ponderado'] = df_normalized['Retorno Normalizado'] * peso_retorno
+df_normalized['Risco Ponderado'] = df_normalized['Risco Normalizado'] * peso_risco
+```
+
+## Cálculo do TOPSIS
+
+```{python}
+ideal_positivo = [
+    df_normalized['Retorno Ponderado'].max(),
+    df_normalized['Risco Ponderado'].max()
+]
+
+ideal_negativo = [
+    df_normalized['Retorno Ponderado'].min(),
+    df_normalized['Risco Ponderado'].min()
+]
+
+distancia_positiva = np.sqrt(
+    (df_normalized['Retorno Ponderado'] - ideal_positivo[0])**2 +
+    (df_normalized['Risco Ponderado'] - ideal_positivo[1])**2
+)
+
+distancia_negativa = np.sqrt(
+    (df_normalized['Retorno Ponderado'] - ideal_negativo[0])**2 +
+    (df_normalized['Risco Ponderado'] - ideal_negativo[1])**2
+)
+
+df_normalized['Índice Similaridade'] = distancia_negativa / (distancia_positiva + distancia_negativa)
+df_normalized['Rank'] = df_normalized['Índice Similaridade'].rank(ascending=False)
+```
+
+## Resultado Final
+
+```{python}
+resultado = df_normalized[['Ticker', 'Retorno Esperado (%)', 'Risco (%)', 'Índice Similaridade', 'Rank']].sort_values(by='Rank')
+resultado
+```
