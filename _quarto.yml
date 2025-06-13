@@ -1,6 +1,7 @@
 project:
   type: website
   output-dir: "."
+
 website:
   title: "Projeto Finanças"
   navbar:
@@ -19,6 +20,8 @@ website:
         text: Fuzzy Topsis
       - href: page4.qmd
         text: Forecasting
+      - href: analise_acoes_gerado.qmd
+        text: Análise de Ações
     right:
       - icon: github
         href: "https://github.com/FinancasFae"
@@ -36,5 +39,6 @@ format:
     toc-location: left  
     page-layout: article  
 
-
-
+execute:
+  engine: python
+  python: "C:/Users/kuiav/anaconda3/python.exe"

@@ -1,0 +1,599 @@
+---
+title: "Fuzzy TOPSIS - Análise de Ações"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    code-fold: true
+    code-summary: "Mostrar/Ocultar Código"
+editor: visual
+---
+
+## Bibliotecas
+
+```{python}
+# Instalar as bibliotecas equivalentes no Python
+!pip install pandas numpy matplotlib seaborn scikit-learn yfinance statsmodels openpyxl prophet
+
+```
+
+## Download dos Dados
+
+```{python}
+# Importar as bibliotecas equivalentes no Python
+import pandas as pd           # Manipulação de dados
+import numpy as np            # Operações matemáticas
+import matplotlib.pyplot as plt  # Gráficos
+import seaborn as sns         # Gráficos
+import yfinance as yf         # Dados de ações
+from statsmodels.tsa.api import ExponentialSmoothing, ARIMA # Modelos de séries temporais
+import statsmodels.api as sm  # Modelagem estatística geral
+from prophet import Prophet   # Previsão de séries temporais
+import datetime               # Manipulação de datas
+import openpyxl               # Leitura e escrita de arquivos Excel
+
+```
+
+# Tickers da carteira
+
+```{python}
+import yfinance as yf
+import pandas as pd
+import numpy as np
+from datetime import datetime, timedelta
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+import matplotlib.pyplot as plt
+
+# 1) Configuração inicial
+tickers = ['BRFS3.SA', 'JBSS3.SA', 'BEEF3.SA', 'MRFG3.SA', 'TSN', 'HRL', 'GIS']
+start_date = '2020-01-01'
+n_ahead = 22
+window = 20
+
+# 2) Baixa preços e calcula log-retornos
+prices_list = [yf.download(ticker, start=start_date)['Close'] for ticker in tickers]
+portfolioPrices = pd.concat(prices_list, axis=1)
+portfolioPrices.columns = tickers
+portfolioPrices = portfolioPrices.dropna()
+
+log_returns = np.log(portfolioPrices / portfolioPrices.shift(1)).dropna().reset_index()
+log_returns = log_returns.rename(columns={'Date': 'date'})
+
+# 3) Modelagem Linear com "quebras" (polynomial regression por ativo)
+log_returns_long = log_returns.melt(id_vars='date', var_name='asset', value_name='ret')
+log_returns_long['trend'] = log_returns_long.groupby('asset').cumcount()
+
+fitted_list = []
+
+for asset in tickers:
+    df_asset = log_returns_long[log_returns_long['asset'] == asset].copy()
+    poly = PolynomialFeatures(degree=2)
+    X_poly = poly.fit_transform(df_asset[['trend']])
+    model = LinearRegression().fit(X_poly, df_asset['ret'])
+    df_asset['fitted'] = model.predict(X_poly)
+    fitted_list.append(df_asset)
+
+log_returns_long = pd.concat(fitted_list, ignore_index=True)
+
+# 4) Próximos 22 dias úteis
+last_date = log_returns_long['date'].max()
+future_dates = pd.bdate_range(start=last_date + timedelta(days=1), periods=n_ahead)
+future_tsbl = pd.DataFrame({
+    'date': np.tile(future_dates, len(tickers)),
+    'asset': np.repeat(tickers, n_ahead)
+})
+
+# 5) Simula 3 cenários de retorno (bootstrap)
+# 5) Simula 3 cenários de retorno (bootstrap)
+np.random.seed(1234)
+sims_all = []
+
+for i in range(3):
+    sim_list = []
+    for asset in tickers:
+        returns = log_returns_long.loc[log_returns_long['asset'] == asset, 'ret']
+        sim_returns = np.random.choice(returns, size=n_ahead, replace=True)
+        sim_df = pd.DataFrame({
+            'date': future_dates,
+            'asset': asset,
+            'ret': sim_returns,
+            '.rep': f'sim{i+1}'
+        })
+        sim_list.append(sim_df)
+    sims_all.append(pd.concat(sim_list))
+
+sims_all = pd.concat(sims_all, ignore_index=True)
+
+
+# 7) Volatilidade móvel
+ret_all = sims_all.sort_values(['asset', '.rep', 'date'])
+ret_all['vol'] = ret_all.groupby(['asset', '.rep'])['ret'].transform(lambda x: x.rolling(window).std())
+
+# Exibir os primeiros dados para verificação
+ret_all.head()
+
+```
+
+# Download dos preços históricos
+
+```{python}
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Definir paleta de cores e estilos personalizados
+custom_palette = {
+    'hist': 'red',
+    'sim1': 'green',
+    'sim2': 'blue',
+    'sim3': 'purple'
+}
+
+custom_linestyles = {
+    'hist': 'solid',
+    'sim1': 'dotted',
+    'sim2': 'dashed',
+    'sim3': (0, (3, 1, 1, 1))  # dash-dot
+}
+
+# Gráfico de Retornos (Histórico + Simulações)
+g = sns.FacetGrid(
+    ret_all,
+    col="asset",
+    col_wrap=2,
+    height=3.5,
+    sharey=False,
+    aspect=1.5,
+    palette=custom_palette
+)
+
+# Função para aplicar estilo e cor no gráfico
+def plot_line(data, color, **kwargs):
+    for rep in data['.rep'].unique():
+        subset = data[data['.rep'] == rep]
+        plt.plot(
+            subset['date'], subset['ret'],
+            label=rep,
+            linestyle=custom_linestyles.get(rep, 'solid'),
+            linewidth=0.7,
+            color=custom_palette.get(rep, color)
+        )
+
+g.map_dataframe(plot_line)
+
+# Ajustar o eixo e títulos
+g.set_axis_labels("Data", "Log-retorno")
+g.set_titles("{col_name}")
+
+# Rotacionar o eixo x
+for ax in g.axes.flat:
+    ax.tick_params(axis='x', rotation=45)
+
+# Título geral
+g.fig.suptitle(f"Retornos: Histórico (252 dias) & {n_ahead} Simulações", fontsize=14)
+
+# Ajustar a legenda final
+handles, labels = g.axes[0].get_legend_handles_labels()
+g.fig.legend(handles, labels, title="Cenário", loc='lower center', ncol=4)
+plt.subplots_adjust(top=0.88, bottom=0.12)
+
+plt.show()
+
+```
+
+# Verificação dos dados baixados
+
+```{python}
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Definir paleta de cores e estilos para cada cenário
+custom_palette = {
+    'hist': 'red',
+    'sim1': 'green',
+    'sim2': 'blue',
+    'sim3': 'purple'
+}
+
+custom_linestyles = {
+    'hist': 'solid',
+    'sim1': 'dotted',
+    'sim2': 'dashed',
+    'sim3': (0, (3, 1, 1, 1))  # dash-dot
+}
+
+# Gráfico 2: Volatilidade Móvel (Histórico + Simulações)
+g = sns.FacetGrid(
+    ret_all,
+    col="asset",
+    col_wrap=2,
+    height=3.5,
+    sharey=False,
+    aspect=1.5
+)
+
+# Função para aplicar estilo e cor no gráfico
+def plot_line(data, color, **kwargs):
+    for rep in data['.rep'].unique():
+        subset = data[data['.rep'] == rep]
+        plt.plot(
+            subset['date'], subset['vol'],
+            label=rep,
+            linestyle=custom_linestyles.get(rep, 'solid'),
+            linewidth=0.7,
+            color=custom_palette.get(rep, color)
+        )
+
+g.map_dataframe(plot_line)
+
+# Ajustar o eixo e títulos
+g.set_axis_labels("Data", f"Desvio-padrão móvel ({window} dias)")
+g.set_titles("{col_name}")
+
+# Rotacionar o eixo x
+for ax in g.axes.flat:
+    ax.tick_params(axis='x', rotation=45)
+
+# Título geral
+g.fig.suptitle(f"Volatilidade Móvel ({window} dias): Histórico & Simulações", fontsize=14)
+
+# Ajustar a legenda final
+handles, labels = g.axes[0].get_legend_handles_labels()
+g.fig.legend(handles, labels, title="Cenário", loc='lower center', ncol=4)
+plt.subplots_adjust(top=0.88, bottom=0.12)
+
+plt.show()
+
+```
+
+## Preparação dos Dados
+
+```{python}
+import pandas as pd
+from openpyxl import Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl.styles import numbers
+
+# 8) Exporta Excel com uma aba por cenário
+wb = Workbook()
+wb.remove(wb.active)  # Remove aba padrão
+
+for sc in ret_all['.rep'].unique():
+    df = ret_all[ret_all['.rep'] == sc].copy()
+
+    # Pivotar como no R
+    df = df[['date', 'asset', 'ret', 'vol']]
+    df_long = df.melt(id_vars=['date', 'asset'], var_name='metric', value_name='value')
+    df_long['col'] = df_long['metric'] + '_' + df_long['asset']
+    df_wide = df_long.pivot_table(index='date', columns='col', values='value').reset_index()
+    df_wide = df_wide.sort_values('date')
+
+    # Criar aba e adicionar dados
+    ws = wb.create_sheet(title=sc)
+    for r in dataframe_to_rows(df_wide, index=False, header=True):
+        ws.append(r)
+
+    # Formatar colunas numéricas
+    for col in ws.iter_cols(min_row=2, min_col=2):
+        for cell in col:
+            cell.number_format = '#,##0.00'
+
+# Salvar o arquivo
+wb.save("retornos_e_volatilidades.xlsx")
+
+```
+
+## Cálculo de Retornos
+
+```{python}
+# Instala dependências
+!pip install -q PyPortfolioOpt pandas numpy openpyxl plotly scipy
+
+import pandas as pd
+import numpy as np
+from scipy.stats import dirichlet
+import plotly.graph_objs as go
+from plotly.subplots import make_subplots
+
+# 1) Parâmetros Monte Carlo
+N_PORTFOLIOS = 50_000
+RISK_FREE    = 0.0
+
+# 2) Carrega Excel e cenários
+xls    = pd.ExcelFile("retornos_e_volatilidades.xlsx")
+sheets = xls.sheet_names  # ["hist","sim1","sim2","sim3"]
+
+# 3) Prepara figura Plotly 2×2
+fig = make_subplots(
+    rows=2, cols=2,
+    subplot_titles=[f"Cenário {sc}" for sc in sheets],
+    horizontal_spacing=0.1, vertical_spacing=0.15
+)
+
+# 4) Loop: simulações, frontier e MaxSharpe
+for idx, sc in enumerate(sheets):
+    # cálculo de linha/col
+    row = idx//2 + 1
+    col = idx%2 + 1
+
+    # 4.1) Retornos do cenário
+    df   = pd.read_excel(xls, sheet_name=sc, index_col=0, parse_dates=True)
+    rets = (
+        df.filter(regex="^ret_")
+          .rename(columns=lambda c:c.replace("ret_",""))
+          .replace([np.inf,-np.inf], np.nan)
+          .dropna(axis=1, how="any")
+    )
+    tickers = rets.columns.tolist()
+    mu  = rets.mean()
+    cov = rets.cov()
+
+    # 4.2) Simula carteiras
+    W = np.random.dirichlet(np.ones(len(tickers)), size=N_PORTFOLIOS)
+    port_rets  = W.dot(mu.values)
+    port_vars  = np.einsum('ij,jk,ik->i', W, cov.values, W)
+    port_risks = np.sqrt(port_vars)
+
+    # 4.3) Max Sharpe
+    sharpe = (port_rets - RISK_FREE) / port_risks
+    idx_sh  = np.nanargmax(sharpe)
+    opt_ret  = port_rets[idx_sh]
+    opt_risk = port_risks[idx_sh]
+
+    # 4.4) Fronteira eficiente empírica
+    df_mc   = pd.DataFrame({"risk":port_risks, "ret":port_rets})
+    df_mc   = df_mc.sort_values("ret")
+    frontier = []
+    min_r = np.inf
+    for r, q in zip(df_mc["risk"], df_mc["ret"]):
+        if r < min_r:
+            frontier.append((r,q))
+            min_r = r
+    frontier = np.array(frontier)
+
+    # 4.5) Adiciona traces a cada subplot
+    fig.add_trace(
+        go.Scatter(
+            x=df_mc["risk"], y=df_mc["ret"],
+            mode="markers",
+            marker=dict(size=2, opacity=0.15, color="gray"),
+            name="Simulações",
+            showlegend=(idx==0)
+        ),
+        row, col
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=frontier[:,0], y=frontier[:,1],
+            mode="lines",
+            line=dict(color="red", width=2),
+            name="Fronteira",
+            showlegend=(idx==0)
+        ),
+        row, col
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=[opt_risk], y=[opt_ret],
+            mode="markers",
+            marker=dict(symbol="star", size=14, color="gold"),
+            name="Máx Sharpe",
+            showlegend=(idx==0)
+        ),
+        row, col
+    )
+
+    # 4.6) Ajusta eixos
+    fig.update_xaxes(title_text="Risco σ", row=row, col=col)
+    fig.update_yaxes(title_text="Retorno Exp.", row=row, col=col)
+
+# 5) Layout geral
+fig.update_layout(
+    height=800, width=900,
+    title_text="Fronteiras Eficientes (Monte Carlo) e Máx Sharpe por Cenário",
+    legend=dict(x=0.85, y=0.05)
+)
+
+# 6) Exibe
+fig.show()
+
+```
+
+## Normalização e Pesos (Fuzzy TOPSIS)
+
+```{python}
+# 1) Instala dependências
+!pip install -q scipy pandas numpy openpyxl matplotlib
+
+# 2) Imports
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import differential_evolution
+
+# 3) Carrega os retornos simulados do cenário "sim1"
+xls = pd.ExcelFile("retornos_e_volatilidades.xlsx")
+df  = pd.read_excel(xls, sheet_name="sim1", index_col=0, parse_dates=True)
+
+# 4) Extrai apenas as colunas de retorno
+rets = (df
+        .filter(regex="^ret_")
+        .rename(columns=lambda c: c.replace("ret_",""))
+        .replace([np.inf, -np.inf], np.nan)
+        .dropna(axis=1, how="any"))
+
+tickers = rets.columns.tolist()
+n = len(tickers)
+
+# 5) Estatísticas de Markowitz
+mu    = rets.mean().values        # retornos médios diários
+Sigma = rets.cov().values         # covariância diária
+
+# 6) Parâmetros de alocação mínima
+min_w = 0.05                      # cada ativo tem no mínimo 5%
+scale = 1 - n * min_w             # parte restante para distribuir
+
+gamma = 1.0                       # trade-off risco vs retorno
+
+# 7) Função‐objetivo (risk - γ·return)
+def markowitz_obj(x):
+    # x em [0,1]^n  →  w_i ≥ min_w, soma(w)=1
+    raw = np.abs(x)
+    if raw.sum() == 0:
+        raw = np.ones_like(raw)
+    w = min_w + scale * raw / raw.sum()
+    ret  = mu.dot(w)
+    risk = np.sqrt(w @ Sigma @ w)
+    return risk - gamma * ret
+
+# 8) Bounds para DE em [0,1]
+bounds = [(0,1)] * n
+
+# 9) Executa Differential Evolution
+res = differential_evolution(
+    markowitz_obj,
+    bounds,
+    strategy     = 'best1bin',
+    popsize      = 15,
+    mutation     = (0.5, 1),
+    recombination= 0.7,
+    tol          = 1e-6,
+    maxiter      = 1000,
+    polish       = True,
+    seed         = 42
+)
+
+# 10) Transforma o vetor X em pesos w
+x_opt = np.abs(res.x)
+w_opt = min_w + scale * x_opt / x_opt.sum()
+
+# 11) Calcula métricas finais
+port_ret   = mu.dot(w_opt)
+port_risk  = np.sqrt(w_opt @ Sigma @ w_opt)
+sharpe     = port_ret / port_risk
+
+# 12) Exibe resultados
+print(f"\n=== Alocação Ótima (Markowitz via DE) — cenário sim1 ===\n")
+for tkr, w in zip(tickers, w_opt):
+    print(f"  {tkr:10s}: {w*100:6.2f}%")
+print(f"\nRetorno Esperado Diário: {port_ret:.4f}")
+print(f"Risco (σ diário)       : {port_risk:.4f}")
+print(f"Sharpe Ratio (Rf=0)    : {sharpe:.4f}")
+
+import plotly.express as px
+
+# 1) Monte um DataFrame de pesos
+df_w = pd.DataFrame({
+    "Ativo": tickers,
+    "Peso": w_opt
+})
+
+# 2) Gera o gráfico de barras interativo
+fig = px.bar(
+    df_w,
+    x="Ativo",
+    y="Peso",
+    title="Alocação Ótima de Ativos — sim1",
+    text=df_w["Peso"].apply(lambda x: f"{x*100:.2f}%")
+)
+
+# 3) Ajustes finos
+fig.update_traces(
+    marker_color="green",
+    textposition="outside"
+)
+fig.update_layout(
+    yaxis=dict(title="Peso (%)", tickformat=".1%"),
+    xaxis_tickangle=-45,
+    uniformtext_minsize=8,
+    uniformtext_mode="hide"
+)
+
+# 4) Exibe
+fig.show()
+
+```
+
+## Cálculo do TOPSIS
+
+```{python}
+# 1) Imports (supondo que já tenha numpy, pandas, plotly instalados)
+
+import numpy as np
+import plotly.graph_objs as go
+from plotly.subplots import make_subplots
+
+# 2) Carrega retornos simulados do cenário "sim1"
+xls    = pd.ExcelFile("retornos_e_volatilidades.xlsx")
+df     = pd.read_excel(xls, sheet_name="sim1", index_col=0, parse_dates=True)
+rets   = (df
+           .filter(regex="^ret_")
+           .rename(columns=lambda c: c.replace("ret_",""))
+           .replace([np.inf,-np.inf], np.nan)
+           .dropna(axis=1, how="any"))
+
+# 3) Vetor de pesos 'w_opt' já calculado anteriormente
+#    Exemplo: w_opt = np.array([...]) na mesma ordem de rets.columns
+weights = pd.Series(w_opt, index=rets.columns)
+
+# 4) Série de retornos da carteira
+port_ret = rets.dot(weights)
+
+# 5) Performance cumulativa (índice de riqueza)
+#    W₀ = 1, W_t = ∏_{i=1}^t (1 + r_i)
+wealth = (1 + port_ret).cumprod()
+
+# 6) Drawdown
+#    DD_t = (W_t - max_{s≤t} W_s) / max_{s≤t} W_s
+running_max = wealth.cummax()
+drawdown    = (wealth - running_max) / running_max
+max_dd      = drawdown.min()
+
+# 7) Monta gráfico interativo com Plotly
+fig = make_subplots(
+    rows=2, cols=1, shared_xaxes=True,
+    row_heights=[0.6, 0.4],
+    subplot_titles=[
+        "Performance Cumulativa da Carteira Ótima (sim1)",
+        f"Drawdown Diário (Máx: {max_dd:.2%})"
+    ]
+)
+
+# 7.1) Wealth index
+fig.add_trace(
+    go.Scatter(
+        x=wealth.index, y=wealth.values,
+        mode="lines", name="Wealth Index"
+    ),
+    row=1, col=1
+)
+
+# 7.2) Drawdown
+fig.add_trace(
+    go.Scatter(
+        x=drawdown.index, y=drawdown.values,
+        mode="lines", name="Drawdown",
+        fill='tozeroy', line=dict(color='crimson')
+    ),
+    row=2, col=1
+)
+
+# 8) Layout
+fig.update_yaxes(title_text="Índice de Riqueza", row=1, col=1)
+fig.update_yaxes(title_text="Drawdown", row=2, col=1, tickformat=".0%")
+fig.update_xaxes(title_text="Data", row=2, col=1)
+
+fig.update_layout(
+    height=600, width=800,
+    showlegend=False,
+    title_text="Performance e Drawdown da Carteira Ótima — sim1"
+)
+
+fig.show()
+```
+
+## Resultado Final
+
+```{python}
+
+```
